@@ -180,8 +180,12 @@ const App = () => {
   const [config, setConfig] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(STREAM_CONFIG_KEY) || '{}');
-      // Force reset if the saved config is using the old localhost
-      if (saved.baseUrl && saved.baseUrl.includes('localhost')) {
+      
+      // Force reset if using old localhost OR if the password is not the new long token
+      const isOld = !saved.password || !saved.password.startsWith('eyJpI');
+      const isLocal = saved.baseUrl && saved.baseUrl.includes('localhost');
+      
+      if (isLocal || isOld) {
         localStorage.removeItem(STREAM_CONFIG_KEY);
         return defaultConfig;
       }
@@ -190,6 +194,7 @@ const App = () => {
       return defaultConfig;
     }
   });
+
 
   const [draftConfig, setDraftConfig] = useState(config);
   const [auth, setAuth] = useState(() => {
