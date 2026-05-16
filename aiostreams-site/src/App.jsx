@@ -3,10 +3,9 @@ import axios from 'axios';
 import { AnimatePresence, motion } from 'framer-motion';
 import { 
   Search, Film, Tv, Sparkles, LogIn, LogOut, Lock, 
-  Crown, Play, Info, X, AlertTriangle, UserRound, 
-  Settings, Clapperboard, Star, Clock, Calendar, 
-  ChevronRight, Users, PlayCircle, ExternalLink,
-  ChevronDown, MessageSquare, Copy, Loader2,
+  Crown, Play, X, AlertTriangle, UserRound, 
+  Clapperboard, Star, Clock, Calendar, 
+  Users, PlayCircle, Copy, Loader2,
   ShieldCheck, Globe2, KeyRound
 } from 'lucide-react';
 
@@ -149,9 +148,14 @@ function hasAllowedRole(auth) {
   return auth.roles.some((roleId) => accessConfig.allowedRoleIds.includes(roleId));
 }
 
+function getConfiguredGuildIds() {
+  return (accessConfig.discordGuildIds || []).filter((guildId) => (
+    guildId && !guildId.includes('PASTE_')
+  ));
+}
 
 function buildDiscordLoginUrl() {
-  if (!accessConfig.discordClientId || !accessConfig.discordGuildIds.length) return '';
+  if (!accessConfig.discordClientId || !getConfiguredGuildIds().length) return '';
   const redirectUri = `${window.location.origin}${window.location.pathname}`;
   const params = new URLSearchParams({
     client_id: accessConfig.discordClientId,
@@ -227,6 +231,7 @@ const App = () => {
   const hydrateDiscordSession = async (token) => {
     setError('');
     try {
+      const guildIds = getConfiguredGuildIds();
       // First, get the user info
       const userResponse = await axios.get('https://discord.com/api/users/@me', {
 
@@ -235,7 +240,7 @@ const App = () => {
 
       // Then, try to find which guild they are in
       let memberData = null;
-      for (const guildId of accessConfig.discordGuildIds) {
+      for (const guildId of guildIds) {
         try {
           const response = await axios.get(`https://discord.com/api/users/@me/guilds/${guildId}/member`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -250,7 +255,7 @@ const App = () => {
         }
       }
 
-      if (!memberData && accessConfig.discordGuildIds.length > 0) {
+      if (!memberData && guildIds.length > 0) {
         throw new Error('Not a member of allowed servers');
       }
 
@@ -287,6 +292,49 @@ const App = () => {
     }
   };
 
+  useEffect(() => {
+    localStorage.setItem(STREAM_CONFIG_KEY, JSON.stringify(config));
+  }, [config]);
+
+  useEffect(() => {
+    if (auth) localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
+    else localStorage.removeItem(AUTH_KEY);
+  }, [auth]);
+
+  useEffect(() => {
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const token = hash.get('access_token');
+    if (!token) return;
+
+    window.history.replaceState({}, document.title, window.location.pathname);
+    Promise.resolve().then(() => hydrateDiscordSession(token));
+  }, []);
+
+  const handleCatalogSearch = async (event) => {
+    event?.preventDefault();
+    if (!query.trim()) {
+      loadRecommendations(mediaType);
+      return;
+    }
+
+    setCatalogLoading(true);
+    setError('');
+    setStreams([]);
+
+    try {
+      const items = await fetchCatalog(mediaType, query);
+      setCatalog(items);
+      setSelectedItem(items[0] || null);
+      setSelectedMedia(null);
+      setMediaDetails(null);
+      setCatalogTitle(items.length ? `Results for "${query.trim()}"` : 'No matches found');
+    } catch {
+      setError('Search is unavailable right now. Try again in a moment.');
+    } finally {
+      setCatalogLoading(false);
+    }
+  };
+
   const fetchItemDetails = async (type, id) => {
     try {
       const response = await axios.get(`${CATALOG_BASE}/meta/${type}/${id}.json`);
@@ -308,7 +356,7 @@ const App = () => {
     setError('');
     
     // Fetch full details (cast, crew, etc)
-    const fullDetails = await fetchItemDetails(item.type === 'series' ? 'series' : 'movie', item.id);
+    await fetchItemDetails(item.type === 'series' ? 'series' : 'movie', item.id);
     
     if (item.type !== 'series') {
       setSeason('1');
@@ -483,6 +531,15 @@ const App = () => {
         </section>
 
         <section className="workspace">
+            {error && (
+              <div className="notice" role="alert">
+                <AlertTriangle size={20} />
+                <div>
+                  <strong>Heads up</strong>
+                  <span>{error}</span>
+                </div>
+              </div>
+            )}
             {selectedMedia && (
               <div className="results-container animate-fade-in">
                 <div className="media-hero" style={{ backgroundImage: `url(${mediaDetails?.background || mediaDetails?.poster || selectedMedia.poster})` }}>
@@ -533,7 +590,8 @@ const App = () => {
                               Play Now
                             </button>
                             <button className="copy-btn" onClick={() => copyStreamUrl(stream)}>
-                              <ExternalLink size={16} />
+                              <Copy size={16} />
+                              {copiedId === stream.id ? 'Copied' : ''}
                             </button>
                           </div>
                         </div>
@@ -599,7 +657,7 @@ const App = () => {
               </div>
             )}
 
-            {!accessConfig.discordClientId || !accessConfig.discordGuildIds.length ? (
+            {!accessConfig.discordClientId || !getConfiguredGuildIds().length ? (
               <div className="notice">
                 <AlertTriangle size={20} />
                 <div>
