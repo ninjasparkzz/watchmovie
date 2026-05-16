@@ -166,11 +166,14 @@ function buildDiscordLoginUrl() {
 const App = () => {
   const [config, setConfig] = useState(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem(STREAM_CONFIG_KEY) || '{}');
+      const savedStr = localStorage.getItem(STREAM_CONFIG_KEY);
+      const saved = savedStr ? JSON.parse(savedStr) : {};
       
-      // Force reset if using old localhost OR if the password is not the new long token
-      const isOld = !saved.password || !saved.password.startsWith('eyJpI');
-      const isLocal = saved.baseUrl && saved.baseUrl.includes('localhost');
+      const pass = saved?.password;
+      const url = saved?.baseUrl;
+      
+      const isOld = typeof pass !== 'string' || !pass.startsWith('eyJpI');
+      const isLocal = typeof url === 'string' && url.includes('localhost');
       
       if (isLocal || isOld) {
         localStorage.removeItem(STREAM_CONFIG_KEY);
@@ -178,6 +181,7 @@ const App = () => {
       }
       return { ...defaultConfig, ...saved };
     } catch {
+
       return defaultConfig;
     }
   });
