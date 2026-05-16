@@ -168,11 +168,18 @@ function buildDiscordLoginUrl() {
 const App = () => {
   const [config, setConfig] = useState(() => {
     try {
-      return { ...defaultConfig, ...JSON.parse(localStorage.getItem(STREAM_CONFIG_KEY) || '{}') };
+      const saved = JSON.parse(localStorage.getItem(STREAM_CONFIG_KEY) || '{}');
+      // Force reset if the saved config is using the old localhost
+      if (saved.baseUrl && saved.baseUrl.includes('localhost')) {
+        localStorage.removeItem(STREAM_CONFIG_KEY);
+        return defaultConfig;
+      }
+      return { ...defaultConfig, ...saved };
     } catch {
       return defaultConfig;
     }
   });
+
   const [draftConfig, setDraftConfig] = useState(config);
   const [auth, setAuth] = useState(() => {
     try {
