@@ -490,12 +490,13 @@ const App = () => {
                       <h1>{mediaDetails?.name || selectedMedia.name}</h1>
                       <p className="description">{mediaDetails?.description || 'No description available.'}</p>
                       
-                      {mediaDetails?.cast && (
+                      {Array.isArray(mediaDetails?.cast) && mediaDetails.cast.length > 0 && (
                         <div className="cast-list">
                           <Users size={16} />
                           <span>{mediaDetails.cast.slice(0, 5).join(', ')}</span>
                         </div>
                       )}
+
 
                       <div className="hero-actions">
                         <button className="primary-button" onClick={handleWatch} disabled={streamLoading}>
