@@ -57,16 +57,26 @@ function cleanBaseUrl(url) {
 
 function buildStreamHeaders(config) {
   const headers = {};
-
-  if (config.uuid && config.password) {
-    headers.Authorization = `Basic ${btoa(`${config.uuid}:${config.password}`)}`;
+  
+  // We send it in multiple ways to bypass different proxy restrictions
+  if (config.uuid) {
+    headers['X-User-UUID'] = config.uuid;
   }
-
-  if (config.uuid) headers['X-User-UUID'] = config.uuid;
-  if (config.password) headers['X-User-Password'] = config.password;
+  if (config.password) {
+    headers['X-User-Password'] = config.password;
+  }
+  
+  // Some versions of AIOStreams still need Basic Auth
+  if (config.uuid && config.password) {
+    headers['Authorization'] = `Basic ${btoa(`${config.uuid}:${config.password}`)}`;
+  } else if (config.uuid) {
+    // If no password, send uuid with empty password
+    headers['Authorization'] = `Basic ${btoa(`${config.uuid}:`)}`;
+  }
 
   return headers;
 }
+
 
 function getNestedValue(source, paths) {
   for (const path of paths) {
@@ -341,6 +351,9 @@ const App = () => {
         params: {
           type: selectedItem.type === 'series' ? 'series' : 'movie',
           id: selectedMediaId,
+          // Also sending credentials in the URL parameters as a fallback
+          user: config.uuid,
+          password: config.password
         },
         headers: buildStreamHeaders(config),
         timeout: 20000,
