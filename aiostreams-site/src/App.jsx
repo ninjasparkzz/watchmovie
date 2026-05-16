@@ -1,20 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { AnimatePresence, motion } from 'framer-motion';
-import {
-  AlertTriangle,
-  Calendar,
-  Clapperboard,
-  Copy,
-  Crown,
-  ExternalLink,
-  Film,
+import { 
   Search, Film, Tv, Sparkles, LogIn, LogOut, Lock, 
   Crown, Play, Info, X, AlertTriangle, UserRound, 
   Settings, Clapperboard, Star, Clock, Calendar, 
   ChevronRight, Users, PlayCircle, ExternalLink,
-  ChevronDown, MessageSquare, Copy
+  ChevronDown, MessageSquare, Copy, Loader2
 } from 'lucide-react';
+
 
 import { accessConfig } from './accessConfig';
 
@@ -297,7 +291,9 @@ const App = () => {
 
   const handleMediaSelect = async (item) => {
     setSelectedMedia(item);
+    setSelectedItem(item);
     setMediaDetails(null);
+
     setStreams([]);
     setError('');
     
