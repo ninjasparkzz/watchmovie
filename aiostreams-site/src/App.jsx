@@ -38,7 +38,7 @@ const mediaTypes = [
 ];
 
 const defaultConfig = {
-  baseUrl: import.meta.env.VITE_STREAM_SOURCE_URL || 'https://ninjasparkzz-watch-backend.hf.space',
+  baseUrl: import.meta.env.VITE_STREAM_SOURCE_URL || 'http://localhost:8080',
   uuid: import.meta.env.VITE_STREAM_USER || '',
   password: import.meta.env.VITE_STREAM_KEY || '',
 };
@@ -608,7 +608,7 @@ const App = () => {
               </div>
             )}
 
-            {!accessConfig.discordClientId || !accessConfig.discordGuildId ? (
+            {!accessConfig.discordClientId || !accessConfig.discordGuildIds.length ? (
               <div className="notice">
                 <AlertTriangle size={20} />
                 <div>
@@ -627,6 +627,7 @@ const App = () => {
                 Continue with Discord
               </a>
             )}
+
           </Modal>
         )}
 
