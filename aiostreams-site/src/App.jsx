@@ -38,10 +38,11 @@ const mediaTypes = [
 ];
 
 const defaultConfig = {
-  baseUrl: import.meta.env.VITE_STREAM_SOURCE_URL || 'https://ninjasparkzz-watch-backend.hf.space',
-  uuid: import.meta.env.VITE_STREAM_USER || '',
-  password: import.meta.env.VITE_STREAM_KEY || '',
+  baseUrl: 'https://ninjasparkzz-watch-backend.hf.space',
+  uuid: 'ce8fac10-5faa-4811-bc4f-ef4a71c220b3',
+  password: 'pokemon123',
 };
+
 
 const featuredFallback = [
   { id: 'tt15398776', type: 'movie', name: 'Oppenheimer', poster: 'https://images.metahub.space/poster/medium/tt15398776/img', releaseInfo: '2023', imdbRating: '8.3' },
@@ -393,14 +394,10 @@ const App = () => {
               Sign in
             </button>
           )}
-          <button className="icon-button" type="button" onClick={() => {
-            setDraftConfig(config);
-            setShowSettings(true);
-          }} aria-label="Open settings">
-            <Settings size={20} />
-          </button>
         </div>
       </header>
+
+
 
       <main>
         <section className="hero-section">
