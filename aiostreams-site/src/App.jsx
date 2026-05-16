@@ -145,8 +145,10 @@ function buildMediaId(item, season, episode) {
 
 function hasAllowedRole(auth) {
   if (!accessConfig.allowedRoleIds.length) return true;
+  if (!auth || !Array.isArray(auth.roles)) return false;
   return auth.roles.some((roleId) => accessConfig.allowedRoleIds.includes(roleId));
 }
+
 
 function buildDiscordLoginUrl() {
   if (!accessConfig.discordClientId || !accessConfig.discordGuildIds.length) return '';
@@ -207,6 +209,8 @@ const App = () => {
   const [mediaDetails, setMediaDetails] = useState(null);
   const [playingStream, setPlayingStream] = useState(null);
   const [streamLoading, setStreamLoading] = useState(false);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+
 
   const [error, setError] = useState('');
   const [showSettings, setShowSettings] = useState(false);
