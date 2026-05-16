@@ -9,13 +9,13 @@ import {
   Crown,
   ExternalLink,
   Film,
-import { 
   Search, Film, Tv, Sparkles, LogIn, LogOut, Lock, 
   Crown, Play, Info, X, AlertTriangle, UserRound, 
   Settings, Clapperboard, Star, Clock, Calendar, 
   ChevronRight, Users, PlayCircle, ExternalLink,
-  ChevronDown, MessageSquare
+  ChevronDown, MessageSquare, Copy
 } from 'lucide-react';
+
 import { accessConfig } from './accessConfig';
 
 const STREAM_CONFIG_KEY = 'watchtv_stream_config';
