@@ -38,7 +38,7 @@ const mediaTypes = [
 ];
 
 const defaultConfig = {
-  baseUrl: import.meta.env.VITE_STREAM_SOURCE_URL || 'http://localhost:8080',
+  baseUrl: import.meta.env.VITE_STREAM_SOURCE_URL || 'https://ninjasparkzz-watch-backend.hf.space',
   uuid: import.meta.env.VITE_STREAM_USER || '',
   password: import.meta.env.VITE_STREAM_KEY || '',
 };
