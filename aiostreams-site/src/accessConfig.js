@@ -1,9 +1,17 @@
-// Public access configuration. Add the Discord role ids that are allowed to watch.
-// For real production security, enforce the same ids on your backend/proxy too.
+// Public access configuration. Add the Discord guild and role ids that are allowed to watch.
 export const accessConfig = {
-  discordClientId: import.meta.env.VITE_DISCORD_CLIENT_ID || '',
-  discordGuildId: import.meta.env.VITE_DISCORD_GUILD_ID || '',
+  discordClientId: '1497224976124874903', 
+  
+  // Add all your Discord Server (Guild) IDs here
+  discordGuildIds: [
+    'PASTE_SERVER_ID_1_HERE',
+    'PASTE_SERVER_ID_2_HERE'
+  ],
+
+  // Add the Role IDs that are allowed to watch
   allowedRoleIds: [
-    // '123456789012345678',
+    'PASTE_ROLE_ID_HERE'
   ],
 };
+
+

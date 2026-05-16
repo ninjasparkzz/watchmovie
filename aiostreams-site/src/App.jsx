@@ -150,7 +150,7 @@ function hasAllowedRole(auth) {
 }
 
 function buildDiscordLoginUrl() {
-  if (!accessConfig.discordClientId || !accessConfig.discordGuildId) return '';
+  if (!accessConfig.discordClientId || !accessConfig.discordGuildIds.length) return '';
   const redirectUri = `${window.location.origin}${window.location.pathname}`;
   const params = new URLSearchParams({
     client_id: accessConfig.discordClientId,
@@ -162,6 +162,7 @@ function buildDiscordLoginUrl() {
 
   return `https://discord.com/oauth2/authorize?${params.toString()}`;
 }
+
 
 const App = () => {
   const [config, setConfig] = useState(() => {
@@ -204,25 +205,46 @@ const App = () => {
   const hydrateDiscordSession = async (token) => {
     setError('');
     try {
-      const [userResponse, memberResponse] = await Promise.all([
-        axios.get('https://discord.com/api/users/@me', {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get(`https://discord.com/api/users/@me/guilds/${accessConfig.discordGuildId}/member`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
+      // First, get the user info
+      const userResponse = await axios.get('https://discord.com/api/users/@me', {
+
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Then, try to find which guild they are in
+      let memberData = null;
+      for (const guildId of accessConfig.discordGuildIds) {
+        try {
+          const response = await axios.get(`https://discord.com/api/users/@me/guilds/${guildId}/member`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (response.data) {
+            memberData = response.data;
+            break; // Found the guild!
+          }
+        } catch {
+          // Not in this guild, keep looking
+          continue;
+        }
+      }
+
+      if (!memberData && accessConfig.discordGuildIds.length > 0) {
+        throw new Error('Not a member of allowed servers');
+      }
 
       setAuth({
         token,
         user: userResponse.data,
-        roles: memberResponse.data?.roles || [],
+        roles: memberData?.roles || [],
       });
       setShowAccessModal(false);
-    } catch {
-      setError('Discord login worked, but this account could not be verified for the server.');
+    } catch (err) {
+      setError(err.message === 'Not a member of allowed servers' 
+        ? 'You are not a member of the required Discord servers.' 
+        : 'Discord login worked, but we could not verify your membership.');
     }
   };
+
 
   const loadRecommendations = async (type) => {
     setCatalogLoading(true);
@@ -255,11 +277,12 @@ const App = () => {
   useEffect(() => {
     const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
     const token = hash.get('access_token');
-    if (!token || !accessConfig.discordGuildId) return;
+    if (!token || !accessConfig.discordGuildIds.length) return;
 
     window.history.replaceState({}, document.title, window.location.pathname);
     Promise.resolve().then(() => hydrateDiscordSession(token));
   }, []);
+
 
   const handleCatalogSearch = async (event) => {
     event?.preventDefault();
