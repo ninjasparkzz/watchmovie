@@ -9,21 +9,12 @@ import {
   Crown,
   ExternalLink,
   Film,
-  Globe2,
-  KeyRound,
-  Loader2,
-  Lock,
-  LogIn,
-  LogOut,
-  Play,
-  Search,
-  Settings,
-  ShieldCheck,
-  Sparkles,
-  Star,
-  Tv,
-  UserRound,
-  X,
+import { 
+  Search, Film, Tv, Sparkles, LogIn, LogOut, Lock, 
+  Crown, Play, Info, X, AlertTriangle, UserRound, 
+  Settings, Clapperboard, Star, Clock, Calendar, 
+  ChevronRight, Users, PlayCircle, ExternalLink,
+  ChevronDown, MessageSquare
 } from 'lucide-react';
 import { accessConfig } from './accessConfig';
 
@@ -212,8 +203,11 @@ const App = () => {
   const [season, setSeason] = useState('1');
   const [episode, setEpisode] = useState('1');
   const [streams, setStreams] = useState([]);
-  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [selectedMedia, setSelectedMedia] = useState(null);
+  const [mediaDetails, setMediaDetails] = useState(null);
+  const [playingStream, setPlayingStream] = useState(null);
   const [streamLoading, setStreamLoading] = useState(false);
+
   const [error, setError] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [showAccessModal, setShowAccessModal] = useState(false);
@@ -289,57 +283,33 @@ const App = () => {
     }
   };
 
-  useEffect(() => {
-    localStorage.setItem(STREAM_CONFIG_KEY, JSON.stringify(config));
-  }, [config]);
-
-  useEffect(() => {
-    if (auth) localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
-    else localStorage.removeItem(AUTH_KEY);
-  }, [auth]);
-
-  useEffect(() => {
-    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-    const token = hash.get('access_token');
-    if (!token || !accessConfig.discordGuildIds.length) return;
-
-    window.history.replaceState({}, document.title, window.location.pathname);
-    Promise.resolve().then(() => hydrateDiscordSession(token));
-  }, []);
-
-
-  const handleCatalogSearch = async (event) => {
-    event?.preventDefault();
-    if (!query.trim()) {
-      loadRecommendations(mediaType);
-      return;
-    }
-
-    setCatalogLoading(true);
-    setError('');
-    setStreams([]);
-
+  const fetchItemDetails = async (type, id) => {
     try {
-      const items = await fetchCatalog(mediaType, query);
-      setCatalog(items);
-      setSelectedItem(items[0] || null);
-      setCatalogTitle(items.length ? `Results for "${query.trim()}"` : 'No matches found');
-    } catch {
-      setError('Search is unavailable right now. Try again in a moment.');
-    } finally {
-      setCatalogLoading(false);
+      const response = await axios.get(`${CATALOG_BASE}/meta/${type}/${id}.json`);
+      const meta = response.data.meta;
+      setMediaDetails(meta);
+      return meta;
+    } catch (err) {
+      console.error('Failed to fetch details:', err);
+      return null;
     }
   };
 
-  const handleSelectItem = (item) => {
-    setSelectedItem(item);
+  const handleMediaSelect = async (item) => {
+    setSelectedMedia(item);
+    setMediaDetails(null);
     setStreams([]);
     setError('');
+    
+    // Fetch full details (cast, crew, etc)
+    const fullDetails = await fetchItemDetails(item.type === 'series' ? 'series' : 'movie', item.id);
+    
     if (item.type !== 'series') {
       setSeason('1');
       setEpisode('1');
     }
   };
+
 
   const handleWatch = async () => {
     if (!selectedItem) return;
@@ -490,7 +460,7 @@ const App = () => {
                 key={`${item.type}-${item.id}`}
                 className={`poster-card ${selectedItem?.id === item.id ? 'is-selected' : ''}`}
                 type="button"
-                onClick={() => handleSelectItem(item)}
+                onClick={() => handleMediaSelect(item)}
               >
                 <div className="poster-frame">
                   {item.poster ? <img src={item.poster} alt="" loading="lazy" /> : <div className="poster-fallback"><Film size={28} /></div>}
@@ -507,98 +477,89 @@ const App = () => {
         </section>
 
         <section className="workspace">
-          <div className="workspace-header">
-            <div>
-              <span className="section-kicker">Watch</span>
-              <h2>{selectedItem ? selectedItem.name : 'Choose a title'}</h2>
-            </div>
-            <button className="primary-button" type="button" onClick={handleWatch} disabled={!selectedItem || streamLoading}>
-              {streamLoading ? <Loader2 className="spin" size={18} /> : canWatch ? <Play size={18} /> : <Lock size={18} />}
-              {canWatch ? 'Find sources' : 'Unlock'}
-            </button>
-          </div>
+            {selectedMedia && (
+              <div className="results-container animate-fade-in">
+                <div className="media-hero" style={{ backgroundImage: `url(${mediaDetails?.background || mediaDetails?.poster || selectedMedia.poster})` }}>
+                  <div className="hero-overlay" />
+                  <div className="hero-content">
+                    <img className="hero-poster" src={mediaDetails?.poster || selectedMedia.poster} alt="" />
+                    <div className="hero-info">
+                      <div className="hero-meta">
+                        {mediaDetails?.imdbRating && <span className="meta-badge rating"><Star size={14} fill="currentColor" /> {mediaDetails.imdbRating}</span>}
+                        {mediaDetails?.runtime && <span className="meta-badge"><Clock size={14} /> {mediaDetails.runtime}</span>}
+                        {mediaDetails?.year && <span className="meta-badge"><Calendar size={14} /> {mediaDetails.year}</span>}
+                      </div>
+                      <h1>{mediaDetails?.name || selectedMedia.name}</h1>
+                      <p className="description">{mediaDetails?.description || 'No description available.'}</p>
+                      
+                      {mediaDetails?.cast && (
+                        <div className="cast-list">
+                          <Users size={16} />
+                          <span>{mediaDetails.cast.slice(0, 5).join(', ')}</span>
+                        </div>
+                      )}
 
-          {selectedItem?.type === 'series' && (
-            <div className="episode-grid compact">
-              <label>
-                Season
-                <input type="number" min="1" value={season} onChange={(event) => setSeason(event.target.value)} />
-              </label>
-              <label>
-                Episode
-                <input type="number" min="1" value={episode} onChange={(event) => setEpisode(event.target.value)} />
-              </label>
-            </div>
-          )}
+                      <div className="hero-actions">
+                        <button className="primary-button" onClick={handleWatch} disabled={streamLoading}>
+                          {streamLoading ? 'Finding sources...' : <><Play fill="currentColor" /> Find sources</>}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-          {error && (
-            <div className="notice" role="alert">
-              <AlertTriangle size={20} />
-              <div>
-                <strong>Heads up</strong>
-                <span>{error}</span>
+                {streams.length > 0 && (
+                  <div className="sources-section">
+                    <h3>Available Streams</h3>
+                    <div className="sources-grid">
+                      {streams.map((stream, idx) => (
+                        <div key={idx} className="source-card">
+                          <div className="source-main">
+                            <div className="source-icon"><PlayCircle size={24} /></div>
+                            <div className="source-details">
+                              <span className="source-name">{stream.name || 'Unknown Source'}</span>
+                              <span className="source-title">{stream.title || 'Direct Stream'}</span>
+                            </div>
+                          </div>
+                          <div className="source-actions">
+                            <button className="watch-btn" onClick={() => setPlayingStream(stream)}>
+                              Play Now
+                            </button>
+                            <button className="copy-btn" onClick={() => copyStreamUrl(stream)}>
+                              <ExternalLink size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+        </section>
+        {playingStream && (
+          <div className="player-overlay">
+            <div className="player-content">
+              <div className="player-header">
+                <h3>{selectedMedia?.name} - {playingStream.title || playingStream.name}</h3>
+                <button className="icon-button" onClick={() => setPlayingStream(null)}><X size={24} /></button>
+              </div>
+              <div className="video-wrapper">
+                <iframe 
+                  src={playingStream.url} 
+                  title="Player"
+                  allowFullScreen
+                  allow="autoplay; encrypted-media"
+                />
+              </div>
+              <div className="player-footer">
+                <p>If the player doesn't load, try opening the link directly: <a href={playingStream.url} target="_blank" rel="noreferrer">Open Link</a></p>
               </div>
             </div>
-          )}
-
-          {!streams.length && !streamLoading && (
-            <div className="empty-state">
-              {canWatch ? <Play size={34} /> : <Lock size={34} />}
-              <h3>{canWatch ? 'Ready to check sources.' : 'Members can unlock playback.'}</h3>
-              <p>{canWatch ? 'Pick a title above, then find available sources.' : 'Sign in with Discord and make sure your account has an allowed role.'}</p>
-            </div>
-          )}
-
-          {streamLoading && (
-            <div className="loading-state">
-              <Loader2 className="spin" size={28} />
-              Checking available sources...
-            </div>
-          )}
-
-          <div className="stream-list">
-            <AnimatePresence>
-              {streams.map((stream, index) => (
-                <motion.article
-                  className="stream-card"
-                  key={stream.id}
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ delay: index * 0.035 }}
-                >
-                  <div className="quality-chip">{stream.quality}</div>
-                  <div className="stream-body">
-                    <span>{stream.provider}</span>
-                    <h3>{stream.title}</h3>
-                    {stream.description && <p>{stream.description}</p>}
-                    <dl>
-                      <div>
-                        <dt>Size</dt>
-                        <dd>{stream.size || 'Unknown'}</dd>
-                      </div>
-                      <div>
-                        <dt>Seeders</dt>
-                        <dd>{stream.seeders ?? 'N/A'}</dd>
-                      </div>
-                    </dl>
-                  </div>
-                  <div className="stream-actions">
-                    <button type="button" onClick={() => copyStreamUrl(stream)} disabled={!stream.url}>
-                      <Copy size={17} />
-                      {copiedId === stream.id ? 'Copied' : 'Copy URL'}
-                    </button>
-                    <button type="button" onClick={() => stream.url && window.open(stream.url, '_blank')} disabled={!stream.url}>
-                      <ExternalLink size={17} />
-                      Open
-                    </button>
-                  </div>
-                </motion.article>
-              ))}
-            </AnimatePresence>
           </div>
-        </section>
+        )}
       </main>
+
 
       <AnimatePresence>
         {showAccessModal && (
