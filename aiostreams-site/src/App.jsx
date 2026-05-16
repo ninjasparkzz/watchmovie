@@ -6,8 +6,10 @@ import {
   Crown, Play, Info, X, AlertTriangle, UserRound, 
   Settings, Clapperboard, Star, Clock, Calendar, 
   ChevronRight, Users, PlayCircle, ExternalLink,
-  ChevronDown, MessageSquare, Copy, Loader2
+  ChevronDown, MessageSquare, Copy, Loader2,
+  ShieldCheck, Globe2, KeyRound
 } from 'lucide-react';
+
 
 
 import { accessConfig } from './accessConfig';
