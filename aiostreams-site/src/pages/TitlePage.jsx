@@ -172,8 +172,22 @@ export default function TitlePage() {
                 {streamLoading ? (
                   <><Loader2 className="spin" size={18} /> Finding sources…</>
                 ) : (
-                  <><Play size={18} fill="currentColor" /> Find sources</>
+                  <><Play size={18} fill="currentColor" /> Find AIO sources</>
                 )}
+              </button>
+              <button className="secondary-button" type="button" onClick={() => {
+                const vidApiUrl = mediaType === 'series' 
+                  ? `https://vidapi.ru/embed/tv/${id}/${season}/${episode}`
+                  : `https://vidapi.ru/embed/movie/${id}`;
+                
+                playStream({
+                  id: 'vidapi',
+                  provider: 'VidAPI',
+                  title: 'Direct Stream (External)',
+                  url: vidApiUrl,
+                });
+              }}>
+                <Play size={18} /> Watch via VidAPI
               </button>
             </div>
           </div>
