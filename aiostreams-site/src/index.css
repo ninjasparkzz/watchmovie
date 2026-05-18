@@ -1067,3 +1067,133 @@ main {
     flex-direction: column;
   }
 }
+
+/* Title & player pages */
+.title-page {
+  display: grid;
+  gap: 22px;
+  margin-top: 24px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 0.5rem 1rem;
+  color: var(--muted);
+  font-weight: 700;
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  transition: color 160ms ease, border-color 160ms ease;
+}
+
+.back-link:hover {
+  color: var(--text);
+  border-color: var(--line-strong);
+}
+
+.back-link.as-button {
+  cursor: pointer;
+  font: inherit;
+}
+
+.title-hero {
+  border: 1px solid var(--line);
+  border-radius: 24px;
+}
+
+.sources-section-page {
+  margin-top: 0;
+}
+
+.sources-section-page h3 {
+  margin: 0 0 0.5rem;
+}
+
+.sources-hint {
+  margin: 0 0 1.25rem;
+  color: var(--soft);
+  font-size: 0.92rem;
+}
+
+.source-quality {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--soft);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.player-page {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.player-page-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--glass-panel);
+  backdrop-filter: var(--blur);
+}
+
+.player-page-bar h1 {
+  flex: 1;
+  margin: 0;
+  font-size: 1.1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-content-page {
+  border: 1px solid var(--line-strong);
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--glass-panel);
+  backdrop-filter: var(--blur);
+}
+
+.player-loading-wrap {
+  background: #000;
+}
+
+.player-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--muted);
+  background: rgba(6, 4, 12, 0.85);
+  pointer-events: none;
+}
+
+.player-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 320px;
+  padding: 2rem;
+  text-align: center;
+  color: var(--muted);
+  background: var(--glass);
+}
+
+.player-error p {
+  margin: 0;
+  max-width: 420px;
+}
