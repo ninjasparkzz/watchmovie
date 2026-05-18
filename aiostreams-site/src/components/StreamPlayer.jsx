@@ -188,27 +188,29 @@ export default function StreamPlayer({ stream, title, onError }) {
     };
 
     return (
-      <div className="video-wrapper" ref={wrapperRef} style={{ background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="video-wrapper" ref={wrapperRef}>
         <div className="ad-warning" style={{ position: 'absolute', top: -30, right: 0, color: '#ff4444', fontSize: '0.85rem', fontWeight: 700 }}>
           <AlertTriangle size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
           Recommend using uBlock Origin to block popups
         </div>
         
         {!iframeStarted ? (
-          <button 
-            className="primary-button" 
-            onClick={startFullscreen}
-            style={{ zIndex: 10, display: 'flex', gap: '8px', alignItems: 'center' }}
-          >
-            <Play fill="currentColor" /> Click to Start in Fullscreen
-          </button>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
+            <button 
+              className="primary-button" 
+              onClick={startFullscreen}
+              style={{ zIndex: 10, display: 'flex', gap: '8px', alignItems: 'center' }}
+            >
+              <Play fill="currentColor" /> Click to Start in Fullscreen
+            </button>
+          </div>
         ) : (
           <iframe
             title={title}
             src={stream.url}
             allow="autoplay; encrypted-media; fullscreen"
             allowFullScreen
-            style={{ width: '100%', height: '100%', border: 'none' }}
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
           />
         )}
       </div>
