@@ -181,6 +181,7 @@ export default function StreamPlayer({ stream, title, onError }) {
           src={stream.url}
           allow="autoplay; encrypted-media; fullscreen"
           allowFullScreen
+          sandbox="allow-scripts allow-same-origin allow-presentation"
         />
       </div>
     );
