@@ -177,8 +177,8 @@ export default function TitlePage() {
               </button>
               <button className="secondary-button" type="button" onClick={() => {
                 const vidApiUrl = mediaType === 'series' 
-                  ? `https://vidapi.ru/embed/tv/${id}/${season}/${episode}`
-                  : `https://vidapi.ru/embed/movie/${id}`;
+                  ? `https://vidapi.xyz/embed/tv/${id}/${season}/${episode}`
+                  : `https://vidapi.xyz/embed/movie/${id}`;
                 
                 playStream({
                   id: 'vidapi',
