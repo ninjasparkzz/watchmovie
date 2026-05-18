@@ -188,20 +188,20 @@ export default function TitlePage() {
 
                 <button className="secondary-button" type="button" onClick={() => {
                   playStream({
-                    id: 'vidsrc', provider: 'VidSrc.cc', title: 'External Player 2',
-                    url: mediaType === 'series' ? `https://vidsrc.cc/v2/embed/tv/${id}/${season}/${episode}` : `https://vidsrc.cc/v2/embed/movie/${id}`,
+                    id: 'autoembed', provider: 'AutoEmbed', title: 'External Player 2',
+                    url: mediaType === 'series' ? `https://player.autoembed.cc/embed/tv/${id}/${season}/${episode}` : `https://player.autoembed.cc/embed/movie/${id}`,
                   });
                 }}>
-                  Player 2 (VidSrc)
+                  Player 2 (AutoEmbed)
                 </button>
 
                 <button className="secondary-button" type="button" onClick={() => {
                   playStream({
-                    id: 'multiembed', provider: 'MultiEmbed', title: 'External Player 3',
-                    url: mediaType === 'series' ? `https://multiembed.mov/directstream.php?video_id=${id}&s=${season}&e=${episode}` : `https://multiembed.mov/directstream.php?video_id=${id}`,
+                    id: 'smashy', provider: 'SmashyStream', title: 'External Player 3',
+                    url: mediaType === 'series' ? `https://player.smashy.stream/tv/${id}?s=${season}&e=${episode}` : `https://player.smashy.stream/movie/${id}`,
                   });
                 }}>
-                  Player 3 (Multi)
+                  Player 3 (Smashy)
                 </button>
               </div>
             </div>
