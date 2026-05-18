@@ -143,9 +143,10 @@ function buildMediaId(item, season, episode) {
 }
 
 function hasAllowedRole(auth) {
-  if (!accessConfig.allowedRoleIds.length) return true;
+  const roleIds = getConfiguredRoleIds();
+  if (!roleIds.length) return true;
   if (!auth || !Array.isArray(auth.roles)) return false;
-  return auth.roles.some((roleId) => accessConfig.allowedRoleIds.includes(roleId));
+  return auth.roles.some((roleId) => roleIds.includes(roleId));
 }
 
 function getConfiguredGuildIds() {
@@ -154,8 +155,27 @@ function getConfiguredGuildIds() {
   ));
 }
 
+function getConfiguredRoleIds() {
+  return (accessConfig.allowedRoleIds || []).filter((roleId) => (
+    roleId && !roleId.includes('PASTE_')
+  ));
+}
+
+function isDiscordConfigured() {
+  return Boolean(
+    accessConfig.discordClientId
+    && accessConfig.discordClientId !== 'PASTE_CLIENT_ID_HERE'
+    && getConfiguredGuildIds().length > 0,
+  );
+}
+
+function isDirectPlayableUrl(url) {
+  if (!url) return false;
+  return /\.(mp4|webm|mkv|m3u8)(\?|$)/i.test(url) || url.includes('m3u8');
+}
+
 function buildDiscordLoginUrl() {
-  if (!accessConfig.discordClientId || !getConfiguredGuildIds().length) return '';
+  if (!isDiscordConfigured()) return '';
   const redirectUri = `${window.location.origin}${window.location.pathname}`;
   const params = new URLSearchParams({
     client_id: accessConfig.discordClientId,
@@ -221,7 +241,7 @@ const App = () => {
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [copiedId, setCopiedId] = useState('');
 
-  const canWatch = Boolean(auth && hasAllowedRole(auth));
+  const canWatch = !isDiscordConfigured() || Boolean(auth && hasAllowedRole(auth));
   const loginUrl = useMemo(() => buildDiscordLoginUrl(), []);
   const selectedMediaId = useMemo(
     () => buildMediaId(selectedItem, season, episode),
@@ -291,6 +311,35 @@ const App = () => {
       setCatalogLoading(false);
     }
   };
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      setCatalogLoading(true);
+      setError('');
+      setStreams([]);
+
+      try {
+        const items = await fetchCatalog('movie');
+        if (cancelled) return;
+        setCatalog(items.length ? items : featuredFallback);
+        setSelectedItem(items[0] || featuredFallback[0]);
+        setCatalogTitle(items.length ? 'Recommended movies' : 'Recommended tonight');
+      } catch {
+        if (cancelled) return;
+        setCatalog(featuredFallback);
+        setSelectedItem(featuredFallback[0]);
+        setCatalogTitle('Recommended tonight');
+      } finally {
+        if (!cancelled) setCatalogLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(STREAM_CONFIG_KEY, JSON.stringify(config));
@@ -367,7 +416,7 @@ const App = () => {
 
   const handleWatch = async () => {
     if (!selectedItem) return;
-    if (!auth || !canWatch) {
+    if (isDiscordConfigured() && (!auth || !canWatch)) {
       setShowAccessModal(true);
       return;
     }
@@ -433,6 +482,17 @@ const App = () => {
         </a>
 
         <div className="topbar-actions">
+          <button
+            className="icon-button"
+            type="button"
+            onClick={() => {
+              setDraftConfig(config);
+              setShowSettings(true);
+            }}
+            aria-label="Source settings"
+          >
+            <KeyRound size={20} />
+          </button>
           {auth ? (
             <button className={`member-pill ${canWatch ? 'is-allowed' : 'is-blocked'}`} type="button" onClick={() => setShowAccessModal(true)}>
               {canWatch ? <Crown size={16} /> : <Lock size={16} />}
@@ -562,10 +622,32 @@ const App = () => {
                         </div>
                       )}
 
+                      {selectedMedia?.type === 'series' && (
+                        <div className="episode-grid compact">
+                          <label>
+                            Season
+                            <input
+                              type="number"
+                              min="1"
+                              value={season}
+                              onChange={(event) => setSeason(event.target.value)}
+                            />
+                          </label>
+                          <label>
+                            Episode
+                            <input
+                              type="number"
+                              min="1"
+                              value={episode}
+                              onChange={(event) => setEpisode(event.target.value)}
+                            />
+                          </label>
+                        </div>
+                      )}
 
                       <div className="hero-actions">
-                        <button className="primary-button" onClick={handleWatch} disabled={streamLoading}>
-                          {streamLoading ? 'Finding sources...' : <><Play fill="currentColor" /> Find sources</>}
+                        <button className="primary-button" type="button" onClick={handleWatch} disabled={streamLoading}>
+                          {streamLoading ? <><Loader2 className="spin" size={18} /> Finding sources...</> : <><Play size={18} fill="currentColor" /> Find sources</>}
                         </button>
                       </div>
                     </div>
@@ -581,15 +663,15 @@ const App = () => {
                           <div className="source-main">
                             <div className="source-icon"><PlayCircle size={24} /></div>
                             <div className="source-details">
-                              <span className="source-name">{stream.name || 'Unknown Source'}</span>
-                              <span className="source-title">{stream.title || 'Direct Stream'}</span>
+                              <span className="source-name">{stream.provider || 'Source'}</span>
+                              <span className="source-title">{stream.title || 'Direct stream'}</span>
                             </div>
                           </div>
                           <div className="source-actions">
-                            <button className="watch-btn" onClick={() => setPlayingStream(stream)}>
-                              Play Now
+                            <button className="watch-btn" type="button" onClick={() => setPlayingStream(stream)} disabled={!stream.url}>
+                              Play now
                             </button>
-                            <button className="copy-btn" onClick={() => copyStreamUrl(stream)}>
+                            <button className="copy-btn" type="button" onClick={() => copyStreamUrl(stream)} disabled={!stream.url} aria-label="Copy stream link">
                               <Copy size={16} />
                               {copiedId === stream.id ? 'Copied' : ''}
                             </button>
@@ -601,21 +683,33 @@ const App = () => {
                 )}
               </div>
             )}
+            {!selectedMedia && (
+              <div className="workspace-empty">
+                <Clapperboard size={40} />
+                <p>Pick a title from the grid above to see details and find streams.</p>
+              </div>
+            )}
         </section>
         {playingStream && (
           <div className="player-overlay">
             <div className="player-content">
               <div className="player-header">
-                <h3>{selectedMedia?.name} - {playingStream.title || playingStream.name}</h3>
-                <button className="icon-button" onClick={() => setPlayingStream(null)}><X size={24} /></button>
+                <h3>{selectedMedia?.name} — {playingStream.title}</h3>
+                <button className="icon-button" type="button" onClick={() => setPlayingStream(null)} aria-label="Close player"><X size={24} /></button>
               </div>
               <div className="video-wrapper">
-                <iframe 
-                  src={playingStream.url} 
-                  title="Player"
-                  allowFullScreen
-                  allow="autoplay; encrypted-media"
-                />
+                {isDirectPlayableUrl(playingStream.url) ? (
+                  <video controls autoPlay playsInline src={playingStream.url}>
+                    Your browser does not support the video tag.
+                  </video>
+                ) : (
+                  <iframe
+                    title={playingStream.title}
+                    src={playingStream.url}
+                    allow="autoplay; encrypted-media; fullscreen"
+                    allowFullScreen
+                  />
+                )}
               </div>
               <div className="player-footer">
                 <p>If the player doesn't load, try opening the link directly: <a href={playingStream.url} target="_blank" rel="noreferrer">Open Link</a></p>
@@ -657,7 +751,7 @@ const App = () => {
               </div>
             )}
 
-            {!accessConfig.discordClientId || !getConfiguredGuildIds().length ? (
+            {!isDiscordConfigured() ? (
               <div className="notice">
                 <AlertTriangle size={20} />
                 <div>
