@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertTriangle, Loader2, Play } from 'lucide-react';
 import { buildMagnetUri, getTorrentTrackers, isDirectPlayableUrl } from '../utils/streamUtils';
 
 const WEBTORRENT_CDN = 'https://cdn.jsdelivr.net/npm/webtorrent@2.5.3/webtorrent.min.js';
