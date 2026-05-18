@@ -167,7 +167,7 @@ export default function TitlePage() {
               </div>
             )}
 
-            <div className="hero-actions">
+            <div className="hero-actions" style={{ flexWrap: 'wrap' }}>
               <button className="primary-button" type="button" onClick={handleFindSources} disabled={streamLoading}>
                 {streamLoading ? (
                   <><Loader2 className="spin" size={18} /> Finding sources…</>
@@ -175,20 +175,35 @@ export default function TitlePage() {
                   <><Play size={18} fill="currentColor" /> Find AIO sources</>
                 )}
               </button>
-              <button className="secondary-button" type="button" onClick={() => {
-                const vidApiUrl = mediaType === 'series' 
-                  ? `https://vidapi.xyz/embed/tv/${id}/${season}/${episode}`
-                  : `https://vidapi.xyz/embed/movie/${id}`;
-                
-                playStream({
-                  id: 'vidapi',
-                  provider: 'VidAPI',
-                  title: 'Direct Stream (External)',
-                  url: vidApiUrl,
-                });
-              }}>
-                <Play size={18} /> Watch via VidAPI
-              </button>
+              
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button className="secondary-button" type="button" onClick={() => {
+                  playStream({
+                    id: 'vidapi', provider: 'VidAPI', title: 'External Player 1',
+                    url: mediaType === 'series' ? `https://vidapi.xyz/embed/tv/${id}/${season}/${episode}` : `https://vidapi.xyz/embed/movie/${id}`,
+                  });
+                }}>
+                  Player 1 (VidAPI)
+                </button>
+
+                <button className="secondary-button" type="button" onClick={() => {
+                  playStream({
+                    id: 'vidsrc', provider: 'VidSrc.cc', title: 'External Player 2',
+                    url: mediaType === 'series' ? `https://vidsrc.cc/v2/embed/tv/${id}/${season}/${episode}` : `https://vidsrc.cc/v2/embed/movie/${id}`,
+                  });
+                }}>
+                  Player 2 (VidSrc)
+                </button>
+
+                <button className="secondary-button" type="button" onClick={() => {
+                  playStream({
+                    id: 'multiembed', provider: 'MultiEmbed', title: 'External Player 3',
+                    url: mediaType === 'series' ? `https://multiembed.mov/directstream.php?video_id=${id}&s=${season}&e=${episode}` : `https://multiembed.mov/directstream.php?video_id=${id}`,
+                  });
+                }}>
+                  Player 3 (Multi)
+                </button>
+              </div>
             </div>
           </div>
         </div>
