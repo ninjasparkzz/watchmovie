@@ -179,11 +179,11 @@ export default function TitlePage() {
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button className="secondary-button" type="button" onClick={() => {
                   playStream({
-                    id: 'vidapi', provider: 'VidAPI', title: 'External Player 1',
-                    url: mediaType === 'series' ? `https://vidapi.xyz/embed/tv/${id}/${season}/${episode}` : `https://vidapi.xyz/embed/movie/${id}`,
+                    id: 'vidking', provider: 'VidKing', title: 'External Player 1',
+                    url: mediaType === 'series' ? `https://www.vidking.net/embed/tv/${id}/${season}/${episode}` : `https://www.vidking.net/embed/movie/${id}`,
                   });
                 }}>
-                  Player 1 (VidAPI)
+                  Player 1 (VidKing)
                 </button>
 
                 <button className="secondary-button" type="button" onClick={() => {
