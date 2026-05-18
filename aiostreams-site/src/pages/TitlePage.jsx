@@ -203,6 +203,15 @@ export default function TitlePage() {
                 }}>
                   Player 3 (Smashy)
                 </button>
+
+                <button className="secondary-button" type="button" onClick={() => {
+                  playStream({
+                    id: 'vidsrc', provider: 'VidSrc.cc', title: 'External Player 4',
+                    url: mediaType === 'series' ? `https://vidsrc.cc/v2/embed/tv/${id}/${season}/${episode}` : `https://vidsrc.cc/v2/embed/movie/${id}`,
+                  });
+                }}>
+                  Player 4 (VidSrc)
+                </button>
               </div>
             </div>
           </div>
