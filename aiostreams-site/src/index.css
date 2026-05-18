@@ -1197,3 +1197,19 @@ main {
   margin: 0;
   max-width: 420px;
 }
+
+.player-progress {
+  width: min(280px, 80%);
+  height: 6px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.player-progress-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--purple-deep), var(--purple-light));
+  transition: width 300ms ease;
+}

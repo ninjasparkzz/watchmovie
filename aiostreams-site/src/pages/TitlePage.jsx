@@ -8,7 +8,7 @@ import {
 import { useApp } from '../context/useApp';
 import {
   buildStreamHeaders, canPlayStream, cleanBaseUrl,
-  extractStreams, normalizeStream,
+  extractStreams, normalizeStream, sortStreamsForWebPlay,
 } from '../utils/streamUtils';
 
 const CATALOG_BASE = 'https://v3-cinemeta.strem.io';
@@ -75,7 +75,9 @@ export default function TitlePage() {
         timeout: 45000,
       });
 
-      const normalized = extractStreams(response.data).map(normalizeStream);
+      const normalized = sortStreamsForWebPlay(
+        extractStreams(response.data).map(normalizeStream),
+      );
       setStreams(normalized);
       if (!normalized.length) setLocalError('No playable sources were found for this title.');
     } catch (err) {
@@ -192,7 +194,7 @@ export default function TitlePage() {
         <section className="browse-section sources-section-page">
           <h3>Available streams</h3>
           <p className="sources-hint">
-            Torrent sources play in your browser. Try 1080p for faster start — 4K remux files are very large.
+            Sources are sorted for browser playback (1080p first). 4K remux torrents often hang — use 1080p/720p, or enable debrid on AIOStreams for instant play.
           </p>
           <div className="sources-grid">
             {streams.map((stream) => (

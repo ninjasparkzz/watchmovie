@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { AppContext } from './appContext';
+import { AppContext } from './watchtvContext';
 
 export function useApp() {
   const ctx = useContext(AppContext);

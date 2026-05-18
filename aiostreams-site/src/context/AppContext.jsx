@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AppContext } from './appContext';
+import { AppContext } from './watchtvContext';
 import axios from 'axios';
 import { accessConfig } from '../accessConfig';
 import { cleanBaseUrl } from '../utils/streamUtils';

@@ -73,13 +73,48 @@ export function normalizeStream(stream, index) {
   };
 }
 
+const WEBTORRENT_TRACKERS = [
+  'wss://tracker.openwebtorrent.com',
+  'wss://tracker.btorrent.xyz',
+  'wss://tracker.files.fm:7073/announce',
+  'udp://tracker.opentrackr.org:1337/announce',
+  'udp://open.stealth.si:80/announce',
+  'udp://tracker.torrent.eu.org:451/announce',
+  'udp://explodie.org:6969/announce',
+  'udp://tracker-udp.gbitt.info:80/announce',
+];
+
+export function getTorrentTrackers() {
+  return WEBTORRENT_TRACKERS;
+}
+
 export function buildMagnetUri(stream) {
   if (!stream.infoHash) return null;
   const hash = String(stream.infoHash).toLowerCase();
-  const params = new URLSearchParams();
-  params.set('xt', `urn:btih:${hash}`);
-  if (stream.title) params.set('dn', stream.title);
-  return `magnet:?${params.toString()}`;
+  const parts = [`magnet:?xt=urn:btih:${hash}`];
+  if (stream.title) parts.push(`dn=${encodeURIComponent(stream.title)}`);
+  WEBTORRENT_TRACKERS.forEach((tracker) => {
+    parts.push(`tr=${encodeURIComponent(tracker)}`);
+  });
+  return parts.join('&');
+}
+
+/** Prefer smaller / fewer-seeder-friendly streams for in-browser torrent play */
+export function sortStreamsForWebPlay(streams) {
+  return [...streams].sort((a, b) => {
+    const score = (s) => {
+      let n = 0;
+      const res = (s.quality || s.title || '').toLowerCase();
+      if (res.includes('2160') || res.includes('4k')) n += 1000;
+      if (res.includes('remux')) n += 500;
+      if (res.includes('1080')) n -= 100;
+      if (res.includes('720')) n -= 200;
+      if (s.size) n += s.size / 1e11;
+      if (s.url) n -= 5000;
+      return n;
+    };
+    return score(a) - score(b);
+  });
 }
 
 export function isDirectPlayableUrl(url) {
