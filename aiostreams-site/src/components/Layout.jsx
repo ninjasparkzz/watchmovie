@@ -47,7 +47,7 @@ export default function Layout() {
 
         <div className="topbar-actions">
           {!isElectron && (
-            <a href="/WatchTV-Setup.exe" className="member-pill is-allowed download-pill-nav" download style={{ textDecoration: 'none' }}>
+            <a href="https://github.com/ninjasparkzz/watchmovie/releases/download/v1.0.0/WatchTV.Setup.0.0.0.exe" className="member-pill is-allowed download-pill-nav" download style={{ textDecoration: 'none' }}>
               <Download size={16} />
               <span>Get App</span>
             </a>
