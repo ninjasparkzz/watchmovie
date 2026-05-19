@@ -35,6 +35,9 @@ jobs:
       - name: Sync Capacitor Android
         run: npm run android:sync
 
+      - name: Generate Android launcher icons
+        run: npm run android:icons
+
       - name: Build debug APK
         working-directory: android
         run: ./gradlew assembleDebug
