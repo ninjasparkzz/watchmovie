@@ -1,0 +1,8 @@
+{
+  "appId": "com.watchtv.app",
+  "appName": "WatchTV",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}
