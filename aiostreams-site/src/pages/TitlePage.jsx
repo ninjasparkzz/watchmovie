@@ -178,9 +178,10 @@ export default function TitlePage() {
               
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button className="secondary-button" type="button" onClick={() => {
+                  const tmdbId = meta?.moviedb_id || id;
                   playStream({
                     id: 'vidking', provider: 'VidKing', title: 'External Player 1',
-                    url: mediaType === 'series' ? `https://www.vidking.net/embed/tv/${id}/${season}/${episode}` : `https://www.vidking.net/embed/movie/${id}`,
+                    url: mediaType === 'series' ? `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}` : `https://www.vidking.net/embed/movie/${tmdbId}`,
                   });
                 }}>
                   Player 1 (VidKing)
