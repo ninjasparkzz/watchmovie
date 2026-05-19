@@ -188,7 +188,7 @@ export default function HomePage() {
               Experience faster playback with built-in ad-blocking, custom keyboard shortcuts (F11 Fullscreen, Ctrl+T Always-on-Top), system tray minimization, and hardware-accelerated streams.
             </p>
             <div className="download-buttons">
-              <a href="/WatchTV-Setup.exe" download className="primary-button download-btn" style={{ textDecoration: 'none' }}>
+              <a href="https://github.com/ninjasparkzz/watchmovie/releases/download/v1.0.0/WatchTV.Setup.0.0.0.exe" download className="primary-button download-btn" style={{ textDecoration: 'none' }}>
                 <Download size={19} />
                 Download for Windows
               </a>
