@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.svg', 'icon-512.png'],
       manifest: {
         name: 'WatchTV',
         short_name: 'WatchTV',
@@ -15,11 +15,18 @@ export default defineConfig({
         theme_color: '#0e0e16',
         background_color: '#0e0e16',
         display: 'standalone',
+        start_url: '/',
         icons: [
           {
-            src: '/aiostreams-site/public/favicon.svg',
+            src: '/favicon.svg',
             sizes: 'any',
             type: 'image/svg+xml',
+            purpose: 'any'
+          },
+          {
+            src: '/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
             purpose: 'any maskable'
           }
         ]
