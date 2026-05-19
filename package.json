@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "electron:dev": "electron .",
     "build-exe": "electron-builder --win",
-    "build-dmg": "electron-builder --mac dmg"
+    "build-dmg": "electron-builder --mac dmg --publish never"
   },
   "build": {
     "appId": "com.watchtv.app",
@@ -26,6 +26,7 @@
     },
     "mac": {
       "target": "dmg",
+      "icon": "electron/icon.png",
       "category": "public.app-category.entertainment"
     },
     "nsis": {
