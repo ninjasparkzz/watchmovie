@@ -14,6 +14,7 @@
     "android:add": "cap add android",
     "android:sync": "npm run build && cap sync android",
     "android:open": "cap open android",
+    "android:icons": "node scripts/generate-android-icons.mjs",
     "android:build": "cd android && gradlew assembleDebug"
   },
   "build": {
