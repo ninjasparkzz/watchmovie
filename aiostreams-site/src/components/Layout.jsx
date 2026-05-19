@@ -2,7 +2,7 @@ import { Outlet, Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Clapperboard, Crown, LogIn, LogOut, Lock, X, AlertTriangle,
-  UserRound, Globe2, KeyRound, Download, Users,
+  UserRound, Globe2, KeyRound, Download,
 } from 'lucide-react';
 import { useApp } from '../context/useApp';
 
@@ -46,10 +46,6 @@ export default function Layout() {
         </Link>
 
         <div className="topbar-actions">
-          <Link className="member-pill community-nav-pill" to="/community">
-            <Users size={16} />
-            <span>Community</span>
-          </Link>
           {!isElectron && (
             <a href="/WatchTV-Setup.exe" className="member-pill is-allowed download-pill-nav" download style={{ textDecoration: 'none' }}>
               <Download size={16} />

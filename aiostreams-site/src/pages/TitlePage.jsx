@@ -3,10 +3,9 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import axios from 'axios';
 import {
   ArrowLeft, Play, Star, Clock, Calendar, Users, PlayCircle,
-  Copy, Loader2, AlertTriangle, Trophy, PartyPopper,
+  Copy, Loader2, AlertTriangle,
 } from 'lucide-react';
 import { useApp } from '../context/useApp';
-import { useCommunity } from '../context/useCommunity';
 import EpisodeSelector from '../components/EpisodeSelector';
 import {
   buildStreamHeaders, canPlayStream, cleanBaseUrl,
@@ -22,7 +21,6 @@ export default function TitlePage() {
   const {
     config, auth, canWatch, setShowAccessModal, isDiscordConfigured, error: globalError,
   } = useApp();
-  const { voteForTitle, createParty } = useCommunity();
 
   const mediaType = type === 'series' ? 'series' : 'movie';
   const [season, setSeason] = useState(searchParams.get('s') || '1');
@@ -109,18 +107,6 @@ export default function TitlePage() {
     });
   };
 
-  const currentTitle = {
-    id,
-    type: mediaType,
-    name: meta?.name || id,
-    poster: meta?.poster || '',
-  };
-
-  const startParty = () => {
-    const party = createParty(currentTitle);
-    navigate(`/party/${party.roomId}`);
-  };
-
   const copyStreamUrl = async (stream) => {
     const text = stream.url || (stream.infoHash ? `magnet:?xt=urn:btih:${stream.infoHash}` : '');
     if (!text) return;
@@ -192,14 +178,6 @@ export default function TitlePage() {
                 ) : (
                   <><Play size={18} fill="currentColor" /> Find sources</>
                 )}
-              </button>
-              <button className="secondary-button" type="button" onClick={() => voteForTitle(currentTitle)}>
-                <Trophy size={18} />
-                Vote
-              </button>
-              <button className="secondary-button" type="button" onClick={startParty}>
-                <PartyPopper size={18} />
-                Party
               </button>
             </div>
           </div>
