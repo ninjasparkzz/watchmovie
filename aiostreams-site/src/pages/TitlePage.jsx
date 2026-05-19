@@ -107,6 +107,25 @@ export default function TitlePage() {
     });
   };
 
+  const handleWatchVidking = () => {
+    const tmdbId = meta?.moviedb_id || id;
+    const url = mediaType === 'series'
+      ? `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}`
+      : `https://www.vidking.net/embed/movie/${tmdbId}`;
+
+    const stream = {
+      id: `vidking-${tmdbId}`,
+      title: 'Vidking Direct',
+      provider: 'Vidking',
+      quality: '1080P',
+      url: url,
+    };
+
+    navigate(`/watch/${mediaType}/${id}/play`, {
+      state: { stream, title: meta?.name || id },
+    });
+  };
+
   const copyStreamUrl = async (stream) => {
     const text = stream.url || (stream.infoHash ? `magnet:?xt=urn:btih:${stream.infoHash}` : '');
     if (!text) return;
@@ -178,6 +197,10 @@ export default function TitlePage() {
                 ) : (
                   <><Play size={18} fill="currentColor" /> Find sources</>
                 )}
+              </button>
+
+              <button className="secondary-button vidking-btn" type="button" onClick={handleWatchVidking}>
+                <PlayCircle size={18} /> Watch on Vidking
               </button>
             </div>
           </div>
