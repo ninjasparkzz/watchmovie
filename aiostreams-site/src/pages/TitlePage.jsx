@@ -10,6 +10,7 @@ import {
   buildStreamHeaders, canPlayStream, cleanBaseUrl,
   extractStreams, normalizeStream, sortStreamsForWebPlay,
 } from '../utils/streamUtils';
+import EpisodeSelector from '../components/EpisodeSelector';
 
 const CATALOG_BASE = 'https://v3-cinemeta.strem.io';
 
@@ -155,16 +156,28 @@ export default function TitlePage() {
             )}
 
             {mediaType === 'series' && (
-              <div className="episode-grid compact">
-                <label>
-                  Season
-                  <input type="number" min="1" value={season} onChange={(e) => setSeason(e.target.value)} />
-                </label>
-                <label>
-                  Episode
-                  <input type="number" min="1" value={episode} onChange={(e) => setEpisode(e.target.value)} />
-                </label>
-              </div>
+              meta?.videos?.length > 0 ? (
+                <EpisodeSelector
+                  videos={meta.videos}
+                  selectedSeason={season}
+                  selectedEpisode={episode}
+                  onSelect={(s, e) => {
+                    setSeason(s);
+                    setEpisode(e);
+                  }}
+                />
+              ) : (
+                <div className="episode-grid compact">
+                  <label>
+                    Season
+                    <input type="number" min="1" value={season} onChange={(e) => setSeason(e.target.value)} />
+                  </label>
+                  <label>
+                    Episode
+                    <input type="number" min="1" value={episode} onChange={(e) => setEpisode(e.target.value)} />
+                  </label>
+                </div>
+              )
             )}
 
             <div className="hero-actions" style={{ flexWrap: 'wrap' }}>
