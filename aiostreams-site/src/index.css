@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
 :root {
   color-scheme: dark;
@@ -1212,4 +1212,198 @@ main {
   border-radius: 999px;
   background: linear-gradient(90deg, var(--purple-deep), var(--purple-light));
   transition: width 300ms ease;
+}
+/* Episode Selector UI */
+.episode-selector-container {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.season-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: none; /* Firefox */
+}
+
+.season-tabs::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.season-tab {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--soft);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.season-tab:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text);
+}
+
+.season-tab.active {
+  background: var(--purple);
+  color: white;
+  border-color: var(--purple-light);
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+}
+
+.episode-list-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.episode-list {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--purple) rgba(255, 255, 255, 0.05);
+}
+
+.episode-list::-webkit-scrollbar {
+  height: 8px;
+}
+
+.episode-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.episode-list::-webkit-scrollbar-thumb {
+  background: var(--purple);
+  border-radius: 4px;
+}
+
+.episode-card {
+  flex: 0 0 280px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(20, 20, 20, 0.6);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  padding: 0;
+}
+
+.episode-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--purple);
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.2);
+}
+
+.episode-card.active {
+  border-color: var(--purple-light);
+  background: rgba(139, 92, 246, 0.1);
+  box-shadow: 0 0 0 2px var(--purple);
+}
+
+.episode-thumbnail-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #111;
+  overflow: hidden;
+}
+
+.episode-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.fallback-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a24;
+}
+
+.episode-card:hover .episode-thumbnail {
+  transform: scale(1.05);
+}
+
+.episode-active-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.new-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #ff3366;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 8px rgba(255, 51, 102, 0.4);
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+  0% { box-shadow: 0 0 0 0 rgba(255, 51, 102, 0.7); }
+  70% { box-shadow: 0 0 0 6px rgba(255, 51, 102, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 51, 102, 0); }
+}
+
+.episode-info {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.episode-title-row {
+  display: flex;
+  gap: 6px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.episode-number {
+  color: var(--purple-light);
+}
+
+.episode-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.episode-desc {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--soft);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.4;
 }
