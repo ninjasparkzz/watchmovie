@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AlertTriangle, Loader2, Play } from 'lucide-react';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 import { buildMagnetUri, getTorrentTrackers, isDirectPlayableUrl } from '../utils/streamUtils';
 
 const WEBTORRENT_CDN = 'https://cdn.jsdelivr.net/npm/webtorrent@2.5.3/webtorrent.min.js';
@@ -39,8 +39,6 @@ export default function StreamPlayer({ stream, title, onError }) {
   const [statusText, setStatusText] = useState('Preparing playback…');
   const [magnetLink, setMagnetLink] = useState('');
   const [progress, setProgress] = useState(0);
-  const [iframeStarted, setIframeStarted] = useState(false);
-  const wrapperRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -176,43 +174,14 @@ export default function StreamPlayer({ stream, title, onError }) {
   }
 
   if (status === 'iframe' && stream.url) {
-    const startFullscreen = () => {
-      setIframeStarted(true);
-      if (wrapperRef.current) {
-        if (wrapperRef.current.requestFullscreen) {
-          wrapperRef.current.requestFullscreen().catch(err => console.log('Fullscreen error:', err));
-        } else if (wrapperRef.current.webkitRequestFullscreen) {
-          wrapperRef.current.webkitRequestFullscreen();
-        }
-      }
-    };
-
     return (
-      <div className="video-wrapper" ref={wrapperRef}>
-        <div className="ad-warning" style={{ position: 'absolute', top: -30, right: 0, color: '#ff4444', fontSize: '0.85rem', fontWeight: 700 }}>
-          <AlertTriangle size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
-          Recommend using uBlock Origin to block popups
-        </div>
-        
-        {!iframeStarted ? (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000' }}>
-            <button 
-              className="primary-button" 
-              onClick={startFullscreen}
-              style={{ zIndex: 10, display: 'flex', gap: '8px', alignItems: 'center' }}
-            >
-              <Play fill="currentColor" /> Click to Start in Fullscreen
-            </button>
-          </div>
-        ) : (
-          <iframe
-            title={title}
-            src={stream.url}
-            allow="autoplay; encrypted-media; fullscreen"
-            allowFullScreen
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-          />
-        )}
+      <div className="video-wrapper">
+        <iframe
+          title={title}
+          src={stream.url}
+          allow="autoplay; encrypted-media; fullscreen"
+          allowFullScreen
+        />
       </div>
     );
   }

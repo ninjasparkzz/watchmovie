@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Search, Film, Tv, Sparkles, ShieldCheck, Star, Calendar, Loader2,
+  Search, Film, Tv, Sparkles, ShieldCheck, Star, Calendar, Loader2, Download, Trophy, Activity,
 } from 'lucide-react';
 import { fetchCatalog } from '../utils/streamUtils';
+import { useCommunity } from '../context/useCommunity';
 
 const mediaTypes = [
   { id: 'movie', label: 'Movies', icon: Film },
@@ -20,6 +21,8 @@ const featuredFallback = [
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { picks, activity } = useCommunity();
+  const isElectron = typeof window !== 'undefined' && window.navigator && window.navigator.userAgent && window.navigator.userAgent.toLowerCase().includes('electron');
   const [mediaType, setMediaType] = useState('movie');
   const [query, setQuery] = useState('');
   const [catalog, setCatalog] = useState(featuredFallback);
@@ -177,6 +180,75 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      <section className="community-strip">
+        <div className="community-strip-panel">
+          <div className="section-header">
+            <div>
+              <span className="section-kicker">Discord picks</span>
+              <h2>Community night</h2>
+            </div>
+            <Trophy size={22} />
+          </div>
+          <div className="mini-pick-list">
+            {picks.slice(0, 3).map((pick) => (
+              <button key={pick.id} type="button" onClick={() => navigate(`/watch/${pick.type === 'series' ? 'series' : 'movie'}/${pick.id}`)}>
+                <strong>{pick.name}</strong>
+                <span>{pick.votes || 0} votes</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="community-strip-panel">
+          <div className="section-header">
+            <div>
+              <span className="section-kicker">Activity</span>
+              <h2>Server pulse</h2>
+            </div>
+            <Activity size={22} />
+          </div>
+          <div className="mini-activity-list">
+            {activity.slice(0, 3).map((item) => (
+              <p key={item.id}><strong>{item.actor}</strong> {item.action} {item.detail}</p>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {!isElectron && (
+        <section className="download-banner">
+          <div className="download-content">
+            <span className="section-kicker">Desktop Experience</span>
+            <h2>Get the WatchTV Desktop App</h2>
+            <p>
+              Experience faster playback with built-in ad-blocking, custom keyboard shortcuts (F11 Fullscreen, Ctrl+T Always-on-Top), system tray minimization, and hardware-accelerated streams.
+            </p>
+            <div className="download-buttons">
+              <a href="/WatchTV-Setup.exe" download className="primary-button download-btn" style={{ textDecoration: 'none' }}>
+                <Download size={19} />
+                Download for Windows
+              </a>
+              <span className="download-meta">WatchTV Setup 0.0.0 (x64)</span>
+            </div>
+          </div>
+          <div className="download-preview" aria-hidden="true">
+            <div className="preview-window">
+              <div className="window-header">
+                <div className="window-dots">
+                  <span className="dot dot-red"></span>
+                  <span className="dot dot-yellow"></span>
+                  <span className="dot dot-green"></span>
+                </div>
+                <div className="window-address">WatchTV.exe</div>
+              </div>
+              <div className="preview-body">
+                <div className="preview-hero"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
     </main>
   );
 }

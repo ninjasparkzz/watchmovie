@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, X } from 'lucide-react';
 import StreamPlayer from '../components/StreamPlayer';
@@ -7,6 +8,15 @@ export default function PlayerPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { stream, title } = location.state || {};
+
+  useEffect(() => {
+    window.watchtv?.setPresence?.({
+      title: title || 'WatchTV',
+      subtitle: type === 'series' ? 'Watching a show' : 'Watching a movie',
+      route: `/watch/${type}/${id}/play`,
+    });
+    return () => window.watchtv?.clearPresence?.();
+  }, [id, title, type]);
 
   if (!stream) {
     return (

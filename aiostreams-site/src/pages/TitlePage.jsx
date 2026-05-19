@@ -3,14 +3,15 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import axios from 'axios';
 import {
   ArrowLeft, Play, Star, Clock, Calendar, Users, PlayCircle,
-  Copy, Loader2, AlertTriangle,
+  Copy, Loader2, AlertTriangle, Trophy, PartyPopper,
 } from 'lucide-react';
 import { useApp } from '../context/useApp';
+import { useCommunity } from '../context/useCommunity';
+import EpisodeSelector from '../components/EpisodeSelector';
 import {
   buildStreamHeaders, canPlayStream, cleanBaseUrl,
   extractStreams, normalizeStream, sortStreamsForWebPlay,
 } from '../utils/streamUtils';
-import EpisodeSelector from '../components/EpisodeSelector';
 
 const CATALOG_BASE = 'https://v3-cinemeta.strem.io';
 
@@ -21,6 +22,7 @@ export default function TitlePage() {
   const {
     config, auth, canWatch, setShowAccessModal, isDiscordConfigured, error: globalError,
   } = useApp();
+  const { voteForTitle, createParty } = useCommunity();
 
   const mediaType = type === 'series' ? 'series' : 'movie';
   const [season, setSeason] = useState(searchParams.get('s') || '1');
@@ -36,6 +38,15 @@ export default function TitlePage() {
     () => (mediaType === 'series' ? `${id}:${season}:${episode}` : id),
     [id, mediaType, season, episode],
   );
+
+  const selectedEpisodeTitle = useMemo(() => {
+    if (mediaType !== 'series' || !Array.isArray(meta?.videos)) return '';
+    const match = meta.videos.find((video) => (
+      Number(video.season) === Number(season)
+      && Number(video.episode || video.number) === Number(episode)
+    ));
+    return match?.name || `Season ${season}, Episode ${episode}`;
+  }, [episode, mediaType, meta, season]);
 
   useEffect(() => {
     let cancelled = false;
@@ -98,6 +109,18 @@ export default function TitlePage() {
     });
   };
 
+  const currentTitle = {
+    id,
+    type: mediaType,
+    name: meta?.name || id,
+    poster: meta?.poster || '',
+  };
+
+  const startParty = () => {
+    const party = createParty(currentTitle);
+    navigate(`/party/${party.roomId}`);
+  };
+
   const copyStreamUrl = async (stream) => {
     const text = stream.url || (stream.infoHash ? `magnet:?xt=urn:btih:${stream.infoHash}` : '');
     if (!text) return;
@@ -156,81 +179,54 @@ export default function TitlePage() {
             )}
 
             {mediaType === 'series' && (
-              meta?.videos?.length > 0 ? (
-                <EpisodeSelector
-                  videos={meta.videos}
-                  selectedSeason={season}
-                  selectedEpisode={episode}
-                  onSelect={(s, e) => {
-                    setSeason(s);
-                    setEpisode(e);
-                  }}
-                />
-              ) : (
-                <div className="episode-grid compact">
-                  <label>
-                    Season
-                    <input type="number" min="1" value={season} onChange={(e) => setSeason(e.target.value)} />
-                  </label>
-                  <label>
-                    Episode
-                    <input type="number" min="1" value={episode} onChange={(e) => setEpisode(e.target.value)} />
-                  </label>
-                </div>
-              )
+              <div className="hero-selected-episode">
+                <span className="section-kicker">Selected episode</span>
+                <strong>{selectedEpisodeTitle}</strong>
+              </div>
             )}
 
-            <div className="hero-actions" style={{ flexWrap: 'wrap' }}>
+            <div className="hero-actions">
               <button className="primary-button" type="button" onClick={handleFindSources} disabled={streamLoading}>
                 {streamLoading ? (
                   <><Loader2 className="spin" size={18} /> Finding sources…</>
                 ) : (
-                  <><Play size={18} fill="currentColor" /> Find AIO sources</>
+                  <><Play size={18} fill="currentColor" /> Find sources</>
                 )}
               </button>
-              
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button className="secondary-button" type="button" onClick={() => {
-                  const tmdbId = meta?.moviedb_id || id;
-                  playStream({
-                    id: 'vidking', provider: 'VidKing', title: 'External Player 1',
-                    url: mediaType === 'series' ? `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}` : `https://www.vidking.net/embed/movie/${tmdbId}`,
-                  });
-                }}>
-                  Player 1 (VidKing)
-                </button>
-
-                <button className="secondary-button" type="button" onClick={() => {
-                  playStream({
-                    id: 'autoembed', provider: 'AutoEmbed', title: 'External Player 2',
-                    url: mediaType === 'series' ? `https://player.autoembed.cc/embed/tv/${id}/${season}/${episode}` : `https://player.autoembed.cc/embed/movie/${id}`,
-                  });
-                }}>
-                  Player 2 (AutoEmbed)
-                </button>
-
-                <button className="secondary-button" type="button" onClick={() => {
-                  playStream({
-                    id: 'smashy', provider: 'SmashyStream', title: 'External Player 3',
-                    url: mediaType === 'series' ? `https://player.smashy.stream/tv/${id}?s=${season}&e=${episode}` : `https://player.smashy.stream/movie/${id}`,
-                  });
-                }}>
-                  Player 3 (Smashy)
-                </button>
-
-                <button className="secondary-button" type="button" onClick={() => {
-                  playStream({
-                    id: 'vidsrc', provider: 'VidSrc.cc', title: 'External Player 4',
-                    url: mediaType === 'series' ? `https://vidsrc.cc/v2/embed/tv/${id}/${season}/${episode}` : `https://vidsrc.cc/v2/embed/movie/${id}`,
-                  });
-                }}>
-                  Player 4 (VidSrc)
-                </button>
-              </div>
+              <button className="secondary-button" type="button" onClick={() => voteForTitle(currentTitle)}>
+                <Trophy size={18} />
+                Vote
+              </button>
+              <button className="secondary-button" type="button" onClick={startParty}>
+                <PartyPopper size={18} />
+                Party
+              </button>
             </div>
           </div>
         </div>
       </section>
+
+      {mediaType === 'series' && Array.isArray(meta?.videos) && meta.videos.length > 0 && (
+        <section className="browse-section episode-section">
+          <div className="section-header">
+            <div>
+              <span className="section-kicker">Episodes</span>
+              <h2>Choose an episode</h2>
+            </div>
+          </div>
+          <EpisodeSelector
+            videos={meta.videos}
+            selectedSeason={season}
+            selectedEpisode={episode}
+            onSelect={(nextSeason, nextEpisode) => {
+              setSeason(String(nextSeason));
+              setEpisode(String(nextEpisode));
+              setStreams([]);
+              setLocalError('');
+            }}
+          />
+        </section>
+      )}
 
       {displayError && (
         <div className="notice" role="alert">

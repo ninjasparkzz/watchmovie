@@ -4,12 +4,13 @@ export const accessConfig = {
   
   // Add all your Discord Server (Guild) IDs here
   discordGuildIds: [
-    '1123529340060192889'
+    'PASTE_SERVER_ID_1_HERE',
+    'PASTE_SERVER_ID_2_HERE'
   ],
 
   // Add the Role IDs that are allowed to watch
   allowedRoleIds: [
-    '1505241042230710415'
+    'PASTE_ROLE_ID_HERE'
   ],
 };
 
