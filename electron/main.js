@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Tray, Menu, globalShortcut, session, nativeImage, ipcMain } from 'electron';
+import { app, BrowserWindow, Tray, Menu, globalShortcut, session, nativeImage } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -31,14 +31,6 @@ function saveWindowState(win) {
 let mainWindow = null;
 let tray = null;
 let isQuitting = false;
-
-function applyPresence(presence) {
-  const title = presence?.title ? `WatchTV - ${presence.title}` : 'WatchTV';
-  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.setTitle(title);
-  if (tray) {
-    tray.setToolTip(presence?.title ? `WatchTV - ${presence.title}` : 'WatchTV - Premium Streaming');
-  }
-}
 
 function createWindow() {
   const state = loadWindowState();
@@ -95,7 +87,13 @@ function createWindow() {
 
   // ─── Navigation guard (stay on our site) ─────────────────────────
   mainWindow.webContents.on('will-navigate', (e, url) => {
-    if (!url.startsWith(LIVE_URL) && !url.includes('vidking.net') && !url.includes('autoembed') && !url.includes('smashy.stream') && !url.includes('vidsrc.cc') && !url.includes('vidapi.xyz')) {
+    const lUrl = url.toLowerCase();
+    if (!url.startsWith(LIVE_URL) && 
+        !lUrl.includes('vidking') && 
+        !lUrl.includes('autoembed') && 
+        !lUrl.includes('smashy.stream') && 
+        !lUrl.includes('vidsrc') && 
+        !lUrl.includes('vidapi')) {
       e.preventDefault();
     }
   });
@@ -155,16 +153,6 @@ function createTray() {
   });
 }
 
-function setupPresenceBridge() {
-  ipcMain.on('watchtv:set-presence', (_event, presence) => {
-    applyPresence(presence);
-  });
-
-  ipcMain.on('watchtv:clear-presence', () => {
-    applyPresence(null);
-  });
-}
-
 // ─── Keyboard Shortcuts ──────────────────────────────────────────────
 function registerShortcuts() {
   // F11 — Toggle Fullscreen
@@ -220,7 +208,6 @@ function setupAdBlocker() {
 // ─── App Lifecycle ───────────────────────────────────────────────────
 app.whenReady().then(() => {
   setupAdBlocker();
-  setupPresenceBridge();
   createWindow();
   createTray();
   registerShortcuts();
