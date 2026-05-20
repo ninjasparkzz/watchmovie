@@ -1,8 +1,9 @@
+import { useEffect, useState } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Clapperboard, Crown, LogIn, LogOut, Lock, X, AlertTriangle,
-  UserRound, Globe2, KeyRound, Download,
+  UserRound, Globe2, KeyRound, Download, Shield,
 } from 'lucide-react';
 import { useApp } from '../context/useApp';
 
@@ -36,6 +37,16 @@ export default function Layout() {
   } = useApp();
 
   const isElectron = typeof window !== 'undefined' && window.navigator && window.navigator.userAgent && window.navigator.userAgent.toLowerCase().includes('electron');
+  const [blockedCount, setBlockedCount] = useState(0);
+
+  useEffect(() => {
+    if (isElectron && window.electronAPI && typeof window.electronAPI.onBlockedAd === 'function') {
+      const unsub = window.electronAPI.onBlockedAd((count) => {
+        setBlockedCount(count);
+      });
+      return unsub;
+    }
+  }, [isElectron]);
 
   return (
     <div className="app-shell">
@@ -46,8 +57,14 @@ export default function Layout() {
         </Link>
 
         <div className="topbar-actions">
+          {isElectron && blockedCount > 0 && (
+            <div className="member-pill is-allowed adblock-telemetry-badge animate-fade-in" title={`${blockedCount} ads and trackers blocked`}>
+              <Shield size={14} fill="rgba(168, 85, 247, 0.25)" />
+              <span>{blockedCount} Ad{blockedCount > 1 ? 's' : ''} Blocked</span>
+            </div>
+          )}
           {!isElectron && (
-            <a href="https://github.com/ninjasparkzz/watchmovie/releases/download/v1.0.0/WatchTV.Setup.0.0.0.exe" className="member-pill is-allowed download-pill-nav" download style={{ textDecoration: 'none' }}>
+            <a href="/WatchTV-Setup.exe" className="member-pill is-allowed download-pill-nav" download style={{ textDecoration: 'none' }}>
               <Download size={16} />
               <span>Get App</span>
             </a>
