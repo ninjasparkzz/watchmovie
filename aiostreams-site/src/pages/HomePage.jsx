@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Search, Film, Tv, Sparkles, ShieldCheck, Star, Calendar, Loader2, Download,
+  Search, Film, Tv, Sparkles, ShieldCheck, Star, Calendar, Loader2, Download, Play,
 } from 'lucide-react';
 import { fetchCatalog } from '../utils/streamUtils';
 
@@ -27,6 +27,16 @@ export default function HomePage() {
   const [catalogTitle, setCatalogTitle] = useState('Recommended tonight');
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [error, setError] = useState('');
+  const [continueWatching, setContinueWatching] = useState([]);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('watchtv_continue_watching')) || [];
+      setContinueWatching(saved);
+    } catch {
+      setContinueWatching([]);
+    }
+  }, []);
 
   const activeType = mediaTypes.find((type) => type.id === mediaType);
   const ActiveIcon = activeType?.icon || Film;
@@ -148,6 +158,53 @@ export default function HomePage() {
         </div>
       )}
 
+      {continueWatching.length > 0 && (
+        <section className="browse-section continue-watching-section animate-fade-in">
+          <div className="section-header">
+            <div>
+              <span className="section-kicker">Jump back in</span>
+              <h2>Continue Watching</h2>
+            </div>
+          </div>
+          <div className="poster-grid continue-watching-grid">
+            {continueWatching.map((item) => (
+              <button
+                key={`continue-${item.type}-${item.id}`}
+                className="poster-card continue-card"
+                type="button"
+                onClick={() => {
+                  if (item.type === 'series') {
+                    // Navigate to TitlePage with season & episode query parameters so they can review or play
+                    navigate(`/watch/${item.type}/${item.id}?s=${item.season || 1}&e=${item.episode || 1}`);
+                  } else {
+                    // Navigate directly to player since we saved the stream
+                    navigate(`/watch/${item.type}/${item.id}/play`, {
+                      state: { stream: item.stream, title: item.title },
+                    });
+                  }
+                }}
+              >
+                <div className="poster-frame">
+                  {item.poster ? <img src={item.poster} alt="" loading="lazy" /> : <div className="poster-fallback"><Film size={28} /></div>}
+                  {item.type === 'series' ? (
+                    <span className="episode-badge">S{item.season} E{item.episode}</span>
+                  ) : (
+                    <span className="type-badge">Movie</span>
+                  )}
+                  <div className="continue-play-overlay">
+                    <Play size={24} fill="currentColor" />
+                  </div>
+                </div>
+                <strong>{item.title}</strong>
+                <small className="continue-timestamp">
+                  {item.type === 'series' ? `Season ${item.season}, Ep ${item.episode}` : 'Resume Movie'}
+                </small>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className="browse-section">
         <div className="section-header">
           <div>
@@ -188,7 +245,7 @@ export default function HomePage() {
               Experience faster playback with built-in ad-blocking, custom keyboard shortcuts (F11 Fullscreen, Ctrl+T Always-on-Top), system tray minimization, and hardware-accelerated streams.
             </p>
             <div className="download-buttons">
-              <a href="https://github.com/ninjasparkzz/watchmovie/releases/download/v1.0.0/WatchTV.Setup.0.0.0.exe" download className="primary-button download-btn" style={{ textDecoration: 'none' }}>
+              <a href="/WatchTV-Setup.exe" download className="primary-button download-btn" style={{ textDecoration: 'none' }}>
                 <Download size={19} />
                 Download for Windows
               </a>

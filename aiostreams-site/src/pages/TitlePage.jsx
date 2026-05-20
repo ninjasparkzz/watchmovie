@@ -63,6 +63,13 @@ export default function TitlePage() {
     return () => { cancelled = true; };
   }, [id, mediaType]);
 
+  useEffect(() => {
+    const s = searchParams.get('s');
+    const e = searchParams.get('e');
+    if (s) setSeason(s);
+    if (e) setEpisode(e);
+  }, [searchParams]);
+
   const handleFindSources = async () => {
     if (isDiscordConfigured() && (!auth || !canWatch)) {
       setShowAccessModal(true);
@@ -102,8 +109,25 @@ export default function TitlePage() {
 
   const playStream = (stream) => {
     if (!canPlayStream(stream)) return;
+    const finalTitle = mediaType === 'series'
+      ? `${meta?.name || id} - Season ${season}, Episode ${episode}`
+      : (meta?.name || id);
     navigate(`/watch/${mediaType}/${id}/play`, {
-      state: { stream, title: meta?.name || id },
+      state: {
+        stream,
+        title: finalTitle,
+        season,
+        episode,
+        videos: meta?.videos || [],
+        moviedb_id: meta?.moviedb_id || null,
+        meta: {
+          name: meta?.name || id,
+          poster: meta?.poster || '',
+          background: meta?.background || '',
+          season: mediaType === 'series' ? season : undefined,
+          episode: mediaType === 'series' ? episode : undefined,
+        }
+      },
     });
   };
 
@@ -121,8 +145,26 @@ export default function TitlePage() {
       url: url,
     };
 
+    const finalTitle = mediaType === 'series'
+      ? `${meta?.name || id} - Season ${season}, Episode ${episode}`
+      : (meta?.name || id);
+
     navigate(`/watch/${mediaType}/${id}/play`, {
-      state: { stream, title: meta?.name || id },
+      state: {
+        stream,
+        title: finalTitle,
+        season,
+        episode,
+        videos: meta?.videos || [],
+        moviedb_id: tmdbId,
+        meta: {
+          name: meta?.name || id,
+          poster: meta?.poster || '',
+          background: meta?.background || '',
+          season: mediaType === 'series' ? season : undefined,
+          episode: mediaType === 'series' ? episode : undefined,
+        }
+      },
     });
   };
 
