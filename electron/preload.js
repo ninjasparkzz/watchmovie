@@ -1,10 +1,3 @@
-import { contextBridge, ipcRenderer } from 'electron';
-
-contextBridge.exposeInMainWorld('watchtv', {
-  setPresence: (presence) => ipcRenderer.send('watchtv:set-presence', presence),
-  clearPresence: () => ipcRenderer.send('watchtv:clear-presence'),
-});
-
 window.addEventListener('DOMContentLoaded', () => {
   const splash = document.createElement('div');
   splash.id = 'watchtv-splash';
@@ -66,3 +59,11 @@ window.addEventListener('DOMContentLoaded', () => {
     }, 800);
   });
 });
+
+const { contextBridge, ipcRenderer } = require('electron');
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  onBlockedAd: (callback) => ipcRenderer.on('blocked-ad', (_event, count) => callback(count)),
+  updatePresence: (details) => ipcRenderer.send('update-presence', details),
+});
+

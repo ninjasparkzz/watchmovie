@@ -1,8 +1,31 @@
-import { app, BrowserWindow, Tray, Menu, globalShortcut, session, nativeImage } from 'electron';
+import { app, BrowserWindow, Tray, Menu, globalShortcut, session, nativeImage, ipcMain } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import DiscordRPC from 'discord-rpc';
 import BLOCKED_DOMAINS from './adblock.js';
+
+// ─── Discord Rich Presence Setup ─────────────────────────────────────
+const clientId = '1347039014167199744';
+DiscordRPC.register(clientId);
+let rpc = null;
+let rpcReady = false;
+
+function initDiscordRPC() {
+  try {
+    rpc = new DiscordRPC.Client({ transport: 'ipc' });
+    rpc.on('ready', () => {
+      rpcReady = true;
+      console.log('Discord RPC client connected successfully.');
+    });
+    rpc.login({ clientId }).catch(() => {
+      console.log('Discord is not running or RPC connection failed.');
+    });
+  } catch (err) {
+    console.log('Failed to create Discord RPC client:', err);
+  }
+}
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -193,11 +216,17 @@ function registerShortcuts() {
 }
 
 // ─── Ad Blocking (Network Interceptor) ───────────────────────────────
+let blockedAdsCount = 0;
+
 function setupAdBlocker() {
   session.defaultSession.webRequest.onBeforeRequest((details, callback) => {
     const url = details.url.toLowerCase();
     const blocked = BLOCKED_DOMAINS.some(domain => url.includes(domain));
     if (blocked) {
+      blockedAdsCount++;
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('blocked-ad', blockedAdsCount);
+      }
       callback({ cancel: true });
     } else {
       callback({});
@@ -211,6 +240,28 @@ app.whenReady().then(() => {
   createWindow();
   createTray();
   registerShortcuts();
+  initDiscordRPC();
+
+  ipcMain.on('update-presence', (event, details) => {
+    if (!rpc || !rpcReady) return;
+    try {
+      if (!details) {
+        rpc.clearActivity();
+        return;
+      }
+      const activity = {
+        details: details.details || undefined,
+        state: details.state || undefined,
+        startTimestamp: details.startTime || Date.now(),
+        largeImageKey: 'logo',
+        largeImageText: 'WatchTV Premium',
+        instance: false,
+      };
+      rpc.setActivity(activity);
+    } catch (err) {
+      console.error('Error updating Discord RPC activity:', err);
+    }
+  });
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -227,4 +278,8 @@ app.on('before-quit', () => {
   isQuitting = true;
   if (mainWindow) saveWindowState(mainWindow);
   globalShortcut.unregisterAll();
+  if (rpc && rpcReady) {
+    rpc.destroy();
+  }
 });
+
