@@ -118,7 +118,9 @@ function createWindow() {
         !lUrl.includes('autoembed') && 
         !lUrl.includes('smashy.stream') && 
         !lUrl.includes('vidsrc') && 
-        !lUrl.includes('vidapi')) {
+        !lUrl.includes('vidapi') &&
+        !lUrl.includes('discord.com') &&
+        !lUrl.includes('discordapp.com')) {
       e.preventDefault();
     }
   });
