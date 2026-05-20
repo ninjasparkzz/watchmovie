@@ -86,8 +86,10 @@ function createWindow() {
     mainWindow.focus();
   });
 
-  // Load the live site
-  mainWindow.loadURL(LIVE_URL);
+  // Clear cache and load the live site
+  mainWindow.webContents.session.clearCache().then(() => {
+    mainWindow.loadURL(LIVE_URL);
+  });
 
   // Save window state on move/resize
   mainWindow.on('resize', () => saveWindowState(mainWindow));
