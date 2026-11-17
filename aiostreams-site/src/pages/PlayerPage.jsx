@@ -2,12 +2,14 @@ import { useEffect, useMemo } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, X, ChevronRight } from 'lucide-react';
 import StreamPlayer from '../components/StreamPlayer';
+import { EMBED_SERVERS, getEmbedStream } from '../utils/streamUtils';
 
 export default function PlayerPage() {
   const { type, id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const { stream, title } = location.state || {};
+  const currentServerId = stream?.serverId || location.state?.serverId || 'vidlink';
 
   const isElectron = typeof window !== 'undefined' && window.navigator && window.navigator.userAgent && window.navigator.userAgent.toLowerCase().includes('electron');
 
@@ -91,16 +93,8 @@ export default function PlayerPage() {
     const nextS = String(nextVideo.season);
     const nextE = String(nextVideo.episode || nextVideo.number);
     const tmdbId = location.state?.moviedb_id || id;
-    const nextUrl = `https://www.vidking.net/embed/tv/${tmdbId}/${nextS}/${nextE}`;
-
-    const newStream = {
-      id: `vidking-${tmdbId}`,
-      title: 'Vidking Direct',
-      provider: 'Vidking',
-      quality: '1080P',
-      url: nextUrl,
-    };
-
+    const server = EMBED_SERVERS.find((s) => s.id === currentServerId) || EMBED_SERVERS[0];
+    const newStream = getEmbedStream(server, location.state?.meta, tmdbId, nextS, nextE, type);
     const baseTitle = location.state?.meta?.name || title.split(' - ')[0] || id;
 
     navigate(`/watch/${type}/${id}/play`, {
@@ -112,7 +106,25 @@ export default function PlayerPage() {
         episode: nextE,
         videos: location.state?.videos,
         moviedb_id: tmdbId,
+        serverId: server.id,
         meta: location.state?.meta,
+      },
+    });
+  };
+
+  const switchServer = (serverId) => {
+    const curSeason = location.state?.season || '1';
+    const curEpisode = location.state?.episode || '1';
+    const tmdbId = location.state?.moviedb_id || id;
+    const server = EMBED_SERVERS.find((s) => s.id === serverId) || EMBED_SERVERS[0];
+    const newStream = getEmbedStream(server, location.state?.meta, tmdbId, curSeason, curEpisode, type);
+
+    navigate(`/watch/${type}/${id}/play`, {
+      replace: true,
+      state: {
+        ...location.state,
+        stream: newStream,
+        serverId: server.id,
       },
     });
   };
@@ -143,6 +155,21 @@ export default function PlayerPage() {
         <h1>{title}</h1>
         
         <div className="player-bar-right">
+          {stream?.serverId && (
+            <div className="player-server-pills">
+              {EMBED_SERVERS.map((server) => (
+                <button
+                  key={server.id}
+                  type="button"
+                  className={`player-server-pill ${currentServerId === server.id ? 'active' : ''}`}
+                  onClick={() => switchServer(server.id)}
+                  title={`Switch to ${server.name}`}
+                >
+                  {server.name.split(' ')[0]}
+                </button>
+              ))}
+            </div>
+          )}
           {nextVideo && (
             <button
               className="primary-button next-episode-bar-btn"

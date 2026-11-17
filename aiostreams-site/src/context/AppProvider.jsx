@@ -8,9 +8,9 @@ const STREAM_CONFIG_KEY = 'watchtv_stream_config';
 const AUTH_KEY = 'watchtv_discord_auth';
 
 const defaultConfig = {
-  baseUrl: 'https://ninjasparkzz-watch-backend.hf.space',
-  uuid: 'ce8fac10-5faa-4811-bc4f-ef4a71c220b3',
-  password: 'eyJpIjoieDNZUm5zS09XZVJqZ3MwZkN1bC9NZz09IiwiZSI6ImdmdmxPMUxSc0ZVTTlJdU1PRWYvbWVsTVRIb0p5bFlWd0QyYWdsbCt5bVE9IiwidCI6ImEifQ',
+  baseUrl: '',
+  uuid: '',
+  password: '',
 };
 
 function getConfiguredGuildIds() {
@@ -60,9 +60,9 @@ export function AppProvider({ children }) {
       const saved = savedStr ? JSON.parse(savedStr) : {};
       const pass = saved?.password;
       const url = saved?.baseUrl;
-      const isOld = typeof pass !== 'string' || !pass.startsWith('eyJpI');
+      const isDeadHf = typeof url === 'string' && url.includes('ninjasparkzz-watch-backend');
       const isLocal = typeof url === 'string' && url.includes('localhost');
-      if (isLocal || isOld) {
+      if (isLocal || isDeadHf) {
         localStorage.removeItem(STREAM_CONFIG_KEY);
         return defaultConfig;
       }

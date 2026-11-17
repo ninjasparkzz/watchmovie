@@ -179,7 +179,7 @@ export default function StreamPlayer({ stream, title, onError }) {
         <iframe
           title={title}
           src={stream.url}
-          allow="autoplay; encrypted-media; fullscreen"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
           allowFullScreen
         />
       </div>

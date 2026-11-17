@@ -158,11 +158,11 @@ export default function Layout() {
             </div>
 
             <label className="field">
-              <span><Globe2 size={16} /> Source URL</span>
+              <span><Globe2 size={16} /> AIOStreams / Debrid URL (Optional)</span>
               <input
                 value={draftConfig.baseUrl}
                 onChange={(event) => setDraftConfig({ ...draftConfig, baseUrl: event.target.value })}
-                placeholder="https://stream.example.com"
+                placeholder="https://your-aiostreams.example.com (optional)"
               />
             </label>
 

@@ -12,10 +12,14 @@ const mediaTypes = [
 ];
 
 const featuredFallback = [
+  { id: 'tt15239678', type: 'movie', name: 'Dune: Part Two', poster: 'https://images.metahub.space/poster/medium/tt15239678/img', releaseInfo: '2024', imdbRating: '8.5' },
   { id: 'tt15398776', type: 'movie', name: 'Oppenheimer', poster: 'https://images.metahub.space/poster/medium/tt15398776/img', releaseInfo: '2023', imdbRating: '8.3' },
-  { id: 'tt0944947', type: 'series', name: 'Game of Thrones', poster: 'https://images.metahub.space/poster/medium/tt0944947/img', releaseInfo: '2011-2019', imdbRating: '9.2' },
-  { id: 'tt0903747', type: 'series', name: 'Breaking Bad', poster: 'https://images.metahub.space/poster/medium/tt0903747/img', releaseInfo: '2008-2013', imdbRating: '9.5' },
+  { id: 'tt0816692', type: 'movie', name: 'Interstellar', poster: 'https://images.metahub.space/poster/medium/tt0816692/img', releaseInfo: '2014', imdbRating: '8.7' },
   { id: 'tt1375666', type: 'movie', name: 'Inception', poster: 'https://images.metahub.space/poster/medium/tt1375666/img', releaseInfo: '2010', imdbRating: '8.8' },
+  { id: 'tt0903747', type: 'series', name: 'Breaking Bad', poster: 'https://images.metahub.space/poster/medium/tt0903747/img', releaseInfo: '2008-2013', imdbRating: '9.5' },
+  { id: 'tt0944947', type: 'series', name: 'Game of Thrones', poster: 'https://images.metahub.space/poster/medium/tt0944947/img', releaseInfo: '2011-2019', imdbRating: '9.2' },
+  { id: 'tt14452776', type: 'series', name: 'The Bear', poster: 'https://images.metahub.space/poster/medium/tt14452776/img', releaseInfo: '2022-', imdbRating: '8.6' },
+  { id: 'tt2560140', type: 'series', name: 'Attack on Titan', poster: 'https://images.metahub.space/poster/medium/tt2560140/img', releaseInfo: '2013-2023', imdbRating: '9.1' },
 ];
 
 export default function HomePage() {

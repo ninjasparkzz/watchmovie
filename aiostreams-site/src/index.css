@@ -1587,22 +1587,94 @@ main {
   overflow: hidden;
 }
 
-/* Vidking Direct Action Button */
+/* Direct Action Button */
+.direct-play-btn,
 .vidking-btn {
-  background: rgba(249, 115, 22, 0.12) !important;
-  border: 1px solid rgba(249, 115, 22, 0.35) !important;
-  color: #ff983f !important;
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+  border: 1px solid rgba(249, 115, 22, 0.4) !important;
+  color: #fff !important;
   font-weight: 700;
+  box-shadow: 0 4px 18px rgba(249, 115, 22, 0.35) !important;
   transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
   cursor: pointer;
 }
 
+.direct-play-btn:hover,
 .vidking-btn:hover {
-  background: rgba(249, 115, 22, 0.2) !important;
+  background: linear-gradient(135deg, #fb923c 0%, #f97316 100%) !important;
   border-color: #f97316 !important;
   color: #fff !important;
-  box-shadow: 0 0 20px rgba(249, 115, 22, 0.35) !important;
+  box-shadow: 0 6px 24px rgba(249, 115, 22, 0.5) !important;
   transform: translateY(-1.5px) !important;
+}
+
+.server-selector-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.server-label {
+  font-size: 0.8rem;
+  color: var(--text-muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.server-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-secondary, #cbd5e1);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.server-pill:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.server-pill.is-active {
+  background: rgba(249, 115, 22, 0.2);
+  border-color: rgba(249, 115, 22, 0.6);
+  color: #ff983f;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.25);
+}
+
+.player-server-pills {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.player-server-pill {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-secondary, #cbd5e1);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.player-server-pill:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.player-server-pill.active {
+  background: rgba(249, 115, 22, 0.25);
+  border-color: #f97316;
+  color: #ff983f;
 }
 
 /* --- Telemetry Badges --- */

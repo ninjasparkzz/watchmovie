@@ -1,5 +1,60 @@
 export function cleanBaseUrl(url) {
+  if (!url) return '';
   return url.trim().replace(/\/+$/, '');
+}
+
+export const EMBED_SERVERS = [
+  {
+    id: 'vidlink',
+    name: 'VidLink (Fast)',
+    getMovieUrl: (meta, id) => {
+      const tmdbId = meta?.moviedb_id || id;
+      return `https://vidlink.pro/movie/${tmdbId}`;
+    },
+    getTvUrl: (meta, id, season, episode) => {
+      const tmdbId = meta?.moviedb_id || id;
+      return `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}`;
+    },
+  },
+  {
+    id: 'vidsrc',
+    name: 'VidSrc (Server 2)',
+    getMovieUrl: (meta, id) => `https://vidsrc.pm/embed/movie/${id || meta?.moviedb_id}`,
+    getTvUrl: (meta, id, season, episode) => `https://vidsrc.pm/embed/tv/${id || meta?.moviedb_id}/${season}/${episode}`,
+  },
+  {
+    id: '2embed',
+    name: '2Embed (Server 3)',
+    getMovieUrl: (meta, id) => {
+      const tmdbId = meta?.moviedb_id || id;
+      return `https://www.2embed.cc/embed/${tmdbId}`;
+    },
+    getTvUrl: (meta, id, season, episode) => {
+      const tmdbId = meta?.moviedb_id || id;
+      return `https://www.2embed.cc/embedtv/${tmdbId}&s=${season}&e=${episode}`;
+    },
+  },
+];
+
+export function getEmbedStream(serverOrId, meta, id, season = 1, episode = 1, mediaType = 'movie') {
+  const server = typeof serverOrId === 'string'
+    ? (EMBED_SERVERS.find((s) => s.id === serverOrId) || EMBED_SERVERS[0])
+    : (serverOrId || EMBED_SERVERS[0]);
+
+  const tmdbId = meta?.moviedb_id || id;
+  const url = mediaType === 'series'
+    ? server.getTvUrl(meta, id, season, episode)
+    : server.getMovieUrl(meta, id);
+
+  return {
+    id: `${server.id}-${tmdbId || id}`,
+    title: `${server.name} Direct`,
+    provider: server.name,
+    quality: '1080P',
+    url,
+    serverId: server.id,
+    streamType: 'iframe',
+  };
 }
 
 export function buildStreamHeaders(config) {

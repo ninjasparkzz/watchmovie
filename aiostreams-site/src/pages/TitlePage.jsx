@@ -10,6 +10,7 @@ import EpisodeSelector from '../components/EpisodeSelector';
 import {
   buildStreamHeaders, canPlayStream, cleanBaseUrl,
   extractStreams, normalizeStream, sortStreamsForWebPlay,
+  EMBED_SERVERS, getEmbedStream,
 } from '../utils/streamUtils';
 
 const CATALOG_BASE = 'https://v3-cinemeta.strem.io';
@@ -31,6 +32,7 @@ export default function TitlePage() {
   const [pageLoading, setPageLoading] = useState(true);
   const [copiedId, setCopiedId] = useState('');
   const [localError, setLocalError] = useState('');
+  const [selectedServer, setSelectedServer] = useState('vidlink');
 
   const mediaId = useMemo(
     () => (mediaType === 'series' ? `${id}:${season}:${episode}` : id),
@@ -81,27 +83,54 @@ export default function TitlePage() {
     setStreams([]);
 
     try {
-      const response = await axios.get(`${cleanBaseUrl(config.baseUrl)}/api/v1/search`, {
-        params: {
-          type: mediaType,
-          id: mediaId,
-          user: config.uuid,
-          password: config.password,
-        },
-        headers: buildStreamHeaders(config),
-        timeout: 45000,
-      });
+      let results = [];
+      const hasCustomBackend = config.baseUrl && !config.baseUrl.includes('ninjasparkzz-watch-backend');
 
-      const normalized = sortStreamsForWebPlay(
-        extractStreams(response.data).map(normalizeStream),
-      );
+      // 1. Try custom backend if provided
+      if (hasCustomBackend) {
+        try {
+          const response = await axios.get(`${cleanBaseUrl(config.baseUrl)}/api/v1/search`, {
+            params: {
+              type: mediaType,
+              id: mediaId,
+              user: config.uuid,
+              password: config.password,
+            },
+            headers: buildStreamHeaders(config),
+            timeout: 10000,
+          });
+
+          if (response.data && typeof response.data === 'object') {
+            results = extractStreams(response.data).map(normalizeStream);
+          }
+        } catch (backendErr) {
+          console.warn('Custom backend error:', backendErr.message);
+        }
+      }
+
+      // 2. Query Torrentio for rich P2P streams
+      if (!results.length) {
+        try {
+          const torrentioUrl = `https://torrentio.strem.fun/stream/${mediaType}/${mediaId}.json`;
+          const response = await axios.get(torrentioUrl, { timeout: 12000 });
+          if (response.data && typeof response.data === 'object') {
+            results = extractStreams(response.data).map(normalizeStream);
+          }
+        } catch (torrentioErr) {
+          console.warn('Torrentio error:', torrentioErr.message);
+        }
+      }
+
+      const normalized = sortStreamsForWebPlay(results);
       setStreams(normalized);
-      if (!normalized.length) setLocalError('No playable sources were found for this title.');
+      if (!normalized.length) {
+        setLocalError('No torrent sources found. Click "Watch Online" above to play directly via web stream.');
+      }
     } catch (err) {
       const detail = err.response?.data?.error?.message
         || err.response?.data?.detail
         || err.message;
-      setLocalError(detail || 'The stream service could not be reached.');
+      setLocalError(detail || 'Could not fetch sources. Please click "Watch Online" above to stream directly.');
     } finally {
       setStreamLoading(false);
     }
@@ -131,20 +160,8 @@ export default function TitlePage() {
     });
   };
 
-  const handleWatchVidking = () => {
-    const tmdbId = meta?.moviedb_id || id;
-    const url = mediaType === 'series'
-      ? `https://www.vidking.net/embed/tv/${tmdbId}/${season}/${episode}`
-      : `https://www.vidking.net/embed/movie/${tmdbId}`;
-
-    const stream = {
-      id: `vidking-${tmdbId}`,
-      title: 'Vidking Direct',
-      provider: 'Vidking',
-      quality: '1080P',
-      url: url,
-    };
-
+  const handleWatchDirect = (serverId = selectedServer) => {
+    const stream = getEmbedStream(serverId, meta, id, season, episode, mediaType);
     const finalTitle = mediaType === 'series'
       ? `${meta?.name || id} - Season ${season}, Episode ${episode}`
       : (meta?.name || id);
@@ -156,7 +173,8 @@ export default function TitlePage() {
         season,
         episode,
         videos: meta?.videos || [],
-        moviedb_id: tmdbId,
+        moviedb_id: meta?.moviedb_id || id,
+        serverId: stream.serverId,
         meta: {
           name: meta?.name || id,
           poster: meta?.poster || '',
@@ -233,17 +251,31 @@ export default function TitlePage() {
             )}
 
             <div className="hero-actions">
-              <button className="primary-button" type="button" onClick={handleFindSources} disabled={streamLoading}>
+              <button className="primary-button direct-play-btn" type="button" onClick={() => handleWatchDirect(selectedServer)}>
+                <PlayCircle size={18} /> Watch Online
+              </button>
+
+              <button className="secondary-button" type="button" onClick={handleFindSources} disabled={streamLoading}>
                 {streamLoading ? (
                   <><Loader2 className="spin" size={18} /> Finding sources…</>
                 ) : (
-                  <><Play size={18} fill="currentColor" /> Find sources</>
+                  <><Play size={18} fill="currentColor" /> Find torrents</>
                 )}
               </button>
+            </div>
 
-              <button className="secondary-button vidking-btn" type="button" onClick={handleWatchVidking}>
-                <PlayCircle size={18} /> Watch on Vidking
-              </button>
+            <div className="server-selector-row">
+              <span className="server-label">Server:</span>
+              {EMBED_SERVERS.map((server) => (
+                <button
+                  key={server.id}
+                  type="button"
+                  className={`server-pill ${selectedServer === server.id ? 'is-active' : ''}`}
+                  onClick={() => setSelectedServer(server.id)}
+                >
+                  {server.name}
+                </button>
+              ))}
             </div>
           </div>
         </div>
